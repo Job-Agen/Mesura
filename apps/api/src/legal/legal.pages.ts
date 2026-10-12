@@ -6,7 +6,7 @@ export interface LegalContact {
   sandbox: boolean;
 }
 
-const UPDATED = '9 octobre 2026';
+const UPDATED = '12 octobre 2026';
 
 const escape = (s: string) => s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 
@@ -76,7 +76,7 @@ L'application n'utilise ni publicité, ni outil de suivi publicitaire, ni servic
   <li>Créer et sécuriser votre compte, et vous connecter.</li>
   <li>Vérifier que vous avez l'âge requis avant de créer une carte.</li>
   <li>Appliquer les règles de vos cartes à chaque paiement et vous montrer votre historique.</li>
-  <li>Prévenir les abus (par exemple en limitant le nombre de tentatives).</li>
+  <li>Prévenir les abus (par exemple en limitant le nombre de tentatives, ou en n'autorisant qu'un compte par identité).</li>
 </ul>
 <p>Vos données ne sont ni vendues ni utilisées à des fins publicitaires.</p>
 
@@ -88,6 +88,10 @@ de connexion est conservé dans le stockage sécurisé du système.</p>
 <h2>Combien de temps ?</h2>
 <p>Tant que votre compte existe. Lorsque vous supprimez votre compte, toutes les données listées ci-dessus sont effacées
 immédiatement et définitivement de notre base.</p>
+<p>Une seule exception, pour éviter qu'un compte soit supprimé puis recréé pour contourner les limites (une identité par
+compte, cartes gratuites) : nous conservons une <strong>empreinte chiffrée irréversible</strong> de votre identité vérifiée
+et de votre numéro Mobile Money, avec le nombre de cartes gratuites déjà utilisées. Cette empreinte ne permet pas de
+retrouver votre nom, votre date de naissance ni votre numéro ; elle sert uniquement à reconnaître une même personne.</p>
 
 <h2>Vos droits</h2>
 <p>Vous pouvez consulter vos informations dans l'application, et demander leur rectification ou leur suppression.
@@ -123,8 +127,11 @@ l'adresse e-mail de votre compte. La suppression est effectuée sous 30 jours.</
 
 <h2>Ce qui est supprimé</h2>
 <p>Immédiatement et définitivement : votre compte (prénom, e-mail, mot de passe), vos informations d'identité, toutes vos
-cartes et leurs règles, vos recharges et votre historique de paiements. Les cartes actives cessent de fonctionner.
-Aucune donnée n'est conservée après la suppression.</p>`,
+cartes et leurs règles, vos recharges et votre historique de paiements. Les cartes actives cessent de fonctionner.</p>
+<h2>Ce qui est conservé</h2>
+<p>Uniquement une empreinte chiffrée irréversible de votre identité vérifiée et de votre numéro Mobile Money, avec le
+nombre de cartes gratuites déjà utilisées. Elle ne permet pas de retrouver ces informations ; elle empêche seulement de
+recréer un compte pour contourner les limites (une identité par compte, cartes gratuites).</p>`,
   );
 }
 
@@ -140,7 +147,8 @@ ${sandboxNote(c)}
 nombre de paiements et durée de validité. Le service est édité par ${contactLine(c)}.</p>
 
 <h2>2. Accès au service</h2>
-<p>Le service est réservé aux personnes âgées de 18 ans ou plus. Vous vous engagez à fournir des informations exactes,
+<p>Le service est réservé aux personnes âgées de 18 ans ou plus. Une personne ne peut avoir qu'un seul compte Mesura actif.
+Vous vous engagez à fournir des informations exactes,
 notamment lors de la vérification d'identité, et à garder votre mot de passe confidentiel. Vous êtes responsable des
 actions effectuées depuis votre compte.</p>
 
