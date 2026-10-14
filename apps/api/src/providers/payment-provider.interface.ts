@@ -8,6 +8,8 @@ export interface InitiateFundingRequest {
   amount: number;
   currency: Currency;
   description: string;
+  /** Payer as known to the aggregator (receipts, fraud checks). */
+  customer: { firstName: string; lastName: string; email: string };
 }
 
 export interface InitiateFundingResult {
