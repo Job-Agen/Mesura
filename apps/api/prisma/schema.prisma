@@ -82,6 +82,29 @@ model User {
   cards              Card[]
   fundings           Funding[]
   passwordResetCodes PasswordResetCode[]
+  fingerprints       Fingerprint[]
+}
+
+enum FingerprintKind {
+  IDENTITY
+  PHONE
+}
+
+/// Irreversible keyed hash (HMAC-SHA256) of a verified identity or a Mobile Money number.
+/// It outlives account deletion (userId is set to null) so that deleting and re-creating an
+/// account cannot reset per-person limits such as free cards. It cannot be turned back into
+/// the name, date of birth or phone number it was computed from.
+model Fingerprint {
+  hash          String          @id
+  kind          FingerprintKind
+  /// Live account currently holding it; null once that account is deleted.
+  userId        String?
+  user          User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
+  freeCardsUsed Int             @default(0)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  @@index([userId])
 }
 
 /// One-time code e-mailed for "forgot password". Only a hash of the code is stored.
@@ -177,6 +200,8 @@ model Funding {
   phone             String
   amount            Int
   fee               Int
+  /// The fee was waived because the person still had a free card (see Fingerprint).
+  freeCard          Boolean             @default(false)
   total             Int
   currency          Currency            @default(XOF)
   status            FundingStatus       @default(PENDING)

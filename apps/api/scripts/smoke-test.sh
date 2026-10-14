@@ -24,8 +24,16 @@ CARD=$(post /cards/draft '{"maxAmount":15000,"maxTransactionCount":1,"durationMi
 post "/cards/$CARD/fund" '{"provider":"TMONEY","phone":"+228 90 12 34 56"}' | j "(d['statusCode'], d['message'])"
 
 echo "== KYC"
-post /kyc/start '{"firstName":"Ama","lastName":"Kodjo","dateOfBirth":"1995-02-03","country":"TG","phone":"+228 90 12 34 56"}' | j "d['status']"
+# A random birth date: one verified identity per live account, and earlier runs may have left accounts behind.
+IDENTITY="{\"firstName\":\"Ama\",\"lastName\":\"Kodjo\",\"dateOfBirth\":\"19$((80 + RANDOM % 20))-0$((1 + RANDOM % 9))-1$((RANDOM % 9))\",\"country\":\"TG\",\"phone\":\"+228 90 12 34 56\"}"
+post /kyc/start "$IDENTITY" | j "d['status']"
 post /kyc/complete | j "d['status']"
+echo "== same identity on a second account (expect 409)"
+TOKEN2=$(curl -sf -X POST "$A/auth/register" -H "$JSON" \
+  -d "{\"name\":\"Ama\",\"email\":\"dup$EMAIL\",\"password\":\"password123\",\"acceptTerms\":true}" | j "d['accessToken']")
+curl -s -X POST "$A/kyc/start" -H "Authorization: Bearer $TOKEN2" -H "$JSON" -d "$IDENTITY" | j "d['status']"
+curl -s -X POST "$A/kyc/complete" -H "Authorization: Bearer $TOKEN2" -H "$JSON" -d '{}' | j "(d['statusCode'], d['message'])"
+curl -s -o /dev/null -w 'second account deleted: %{http_code}\n' -X DELETE "$A/me" -H "Authorization: Bearer $TOKEN2" -H "$JSON" -d '{"password":"password123"}'
 
 echo "== validation (expect 400s)"
 post /cards/draft '{"maxAmount":0,"maxTransactionCount":1,"durationMinutes":1440,"merchantRestriction":null}' | j "(d['statusCode'], d['message'])"

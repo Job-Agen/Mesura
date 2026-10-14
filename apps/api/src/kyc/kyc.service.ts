@@ -1,6 +1,7 @@
 import { ConflictException, Inject, Injectable } from '@nestjs/common';
 import type { KycProfile } from '@prisma/client';
 import type { KycProfileDto, KycStartInput } from '@mesura/shared';
+import { FingerprintService } from '../abuse/fingerprint.service';
 import { iso } from '../common/iso';
 import { PrismaService } from '../prisma/prisma.service';
 import { KYC_PROVIDER, type KycProvider } from '../providers/kyc-provider.interface';
@@ -10,6 +11,7 @@ export class KycService {
   constructor(
     private readonly prisma: PrismaService,
     @Inject(KYC_PROVIDER) private readonly kycProvider: KycProvider,
+    private readonly fingerprints: FingerprintService,
   ) {}
 
   async get(userId: string): Promise<KycProfileDto> {
@@ -44,13 +46,15 @@ export class KycService {
       throw new ConflictException("Envoyez d'abord vos informations d'identité");
     }
 
-    const result = await this.kycProvider.verify({
-      userId,
+    const facts = {
       firstName: profile.firstName,
       lastName: profile.lastName,
       dateOfBirth: profile.dateOfBirth,
       country: profile.country,
-    });
+    };
+    const result = await this.kycProvider.verify({ userId, ...facts });
+    // One verified identity per live account; refused (409) before the profile is marked verified.
+    if (result.decision === 'VERIFIED') await this.fingerprints.claimIdentity(userId, facts);
     const updated = await this.prisma.kycProfile.update({
       where: { userId },
       data: {

@@ -143,4 +143,6 @@ pnpm --filter @mesura/api smoke        # end-to-end API scenario against a runni
 | `SANDBOX_MODE` | `true` in `.env.example` | Enables `/sandbox/*`. When `false` those routes return 404. |
 | `SANDBOX_FUNDING_AUTO_CONFIRM_SECONDS` | `10` | Fake Mobile Money auto-approval delay (`0` = manual only). |
 | `SERVICE_FEE_BPS` | `500` | Illustrative fee, in basis points (5 %). |
+| `FREE_CARDS_PER_PERSON` | `0` | Cards per person funded without the fee. A person = verified identity + Mobile Money number, tracked by fingerprints that survive account deletion. |
+| `FINGERPRINT_SECRET` | *(derived from `JWT_SECRET`)* | Key of those fingerprints (≥ 32 chars). Set it before real users sign up and never change it. |
 | `FUNDING_EXPIRY_MINUTES` | `15` | A pending Mobile Money request expires after this. |

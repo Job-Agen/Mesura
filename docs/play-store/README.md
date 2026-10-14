@@ -116,7 +116,7 @@ notes qu'il s'agit d'une **démonstration sans transaction réelle**.
 |---|---|
 | Collecte ou partage de données ? | Collecte : oui. Partage avec des tiers : non |
 | Chiffrement en transit | Oui (HTTPS) |
-| Suppression possible par l'utilisateur | Oui — dans l'app et via `/legal/delete-account` |
+| Suppression possible par l'utilisateur | Oui — dans l'app et via `/legal/delete-account`. Seule une empreinte chiffrée irréversible (identité, numéro) est gardée pour la prévention de la fraude, ce que Google autorise si c'est déclaré |
 | Infos personnelles | Nom, adresse e-mail, numéro de téléphone, date de naissance — *fonctionnement de l'app, gestion du compte, prévention de la fraude* ; obligatoires |
 | Infos financières | Historique d'achats (paiements simulés), autres infos financières (règles des cartes, recharges) — *fonctionnement de l'app* ; obligatoires |
 | Position, contacts, photos, fichiers, audio, santé, identifiants publicitaires | Non collectés |

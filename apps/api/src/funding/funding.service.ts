@@ -9,6 +9,7 @@ import {
 import type { Funding } from '@prisma/client';
 import { randomUUID } from 'node:crypto';
 import type { FundCardInput, FundingDto } from '@mesura/shared';
+import { FingerprintService } from '../abuse/fingerprint.service';
 import { CardsService } from '../cards/cards.service';
 import { PricingService } from '../cards/pricing.service';
 import { iso } from '../common/iso';
@@ -26,6 +27,7 @@ export class FundingService {
     private readonly cards: CardsService,
     private readonly pricing: PricingService,
     private readonly kyc: KycService,
+    private readonly fingerprints: FingerprintService,
     @Inject(PAYMENT_PROVIDER) private readonly payments: PaymentProvider,
     @Inject(APP_ENV) private readonly env: AppEnv,
   ) {}
@@ -40,7 +42,9 @@ export class FundingService {
       throw new ForbiddenException('Vérifiez votre identité avant de recharger une carte');
     }
 
-    const quote = this.pricing.quote(card.policy.maxAmount, card.policy.currency);
+    const freeCard = await this.fingerprints.freeCardAvailable(userId, input.phone);
+    const quote = this.pricing.quote(card.policy.maxAmount, card.policy.currency, freeCard);
+    await this.fingerprints.recordPhone(userId, input.phone);
     // A new request supersedes any request still waiting on the phone.
     await this.prisma.funding.updateMany({ where: { cardId, status: 'PENDING' }, data: { status: 'EXPIRED' } });
 
@@ -62,6 +66,7 @@ export class FundingService {
         phone: input.phone,
         amount: quote.funding,
         fee: quote.fee,
+        freeCard,
         total: quote.total,
         currency: quote.currency,
         status: initiated.status,
@@ -99,6 +104,7 @@ export class FundingService {
       });
       if (claimed.count === 1) {
         this.logger.log(`Funding ${funding.id} confirmed`);
+        if (funding.freeCard) await this.fingerprints.consumeFreeCard(funding.userId, funding.phone);
         await this.cards.activateAfterFunding(funding.cardId);
       }
     } else if (status === 'FAILED' || status === 'EXPIRED' || Date.now() >= expiresAt) {

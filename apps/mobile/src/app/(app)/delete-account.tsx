@@ -45,7 +45,8 @@ export default function DeleteAccount() {
       <Text style={type.title}>Vous partez ?</Text>
       <Text style={[type.body, { color: colors.muted }]}>
         La suppression efface immédiatement votre compte, vos informations d'identité, toutes vos cartes, leurs règles,
-        vos recharges et votre historique de paiements. Les cartes actives cessent de fonctionner.
+        vos recharges et votre historique de paiements. Les cartes actives cessent de fonctionner. Seule une empreinte
+        chiffrée de votre identité et de votre numéro est gardée, pour qu'un nouveau compte ne contourne pas les limites.
       </Text>
       <InfoNote>
         Les montants non dépensés sur vos cartes ne sont pas remboursés automatiquement. Clôturez ou utilisez vos cartes avant

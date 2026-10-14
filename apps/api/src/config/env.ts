@@ -17,6 +17,13 @@ const envSchema = z.object({
   SANDBOX_MODE: booleanString,
   SANDBOX_FUNDING_AUTO_CONFIRM_SECONDS: z.coerce.number().int().min(0).default(10),
   SERVICE_FEE_BPS: z.coerce.number().int().min(0).max(10_000).default(500),
+  /** Cards per person (verified identity / Mobile Money number) funded without the service fee. 0 = none. */
+  FREE_CARDS_PER_PERSON: z.coerce.number().int().min(0).max(100).default(0),
+  /**
+   * Key for identity and phone fingerprints. Set it (≥ 32 chars) before real users sign up and never change
+   * it: existing fingerprints stop matching. When empty, a key is derived from JWT_SECRET.
+   */
+  FINGERPRINT_SECRET: z.union([z.literal(''), z.string().min(32, 'FINGERPRINT_SECRET must be at least 32 characters')]).default(''),
   FUNDING_EXPIRY_MINUTES: z.coerce.number().int().positive().default(15),
   /** Shown on the public legal pages (privacy policy, account deletion). */
   LEGAL_PUBLISHER: z.string().default(''),
