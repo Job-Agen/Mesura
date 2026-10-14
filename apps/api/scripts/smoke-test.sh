@@ -45,9 +45,11 @@ curl -s "$A/cards/$CARD" -H "$H" | j "(d['status'], d['pricing'])"
 
 echo "== fund"
 FID=$(post "/cards/$CARD/fund" '{"provider":"TMONEY","phone":"+228 90 12 34 56"}' | j "d['id']")
-curl -s "$A/funding/$FID" -H "$H" | j "(d['status'], d['total'])"
+# Before the funding is read back: with FedaPay the payment may already be approved, but the
+# card is only activated when Mesura syncs the funding.
 echo "-- payment before activation (expect BLOCKED CARD_NOT_ACTIVE)"
 pay "$CARD" CANVA 5650 | j "(d['status'], d.get('reason'))"
+curl -s "$A/funding/$FID" -H "$H" | j "(d['status'], d['total'])"
 echo "-- confirm Mobile Money"
 post "/sandbox/funding/$FID/confirm" | j "d['status']"
 curl -s "$A/cards/$CARD" -H "$H" | j "(d['status'], d['last4'])"
