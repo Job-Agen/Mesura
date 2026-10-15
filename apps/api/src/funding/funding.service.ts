@@ -48,6 +48,10 @@ export class FundingService {
     // A new request supersedes any request still waiting on the phone.
     await this.prisma.funding.updateMany({ where: { cardId, status: 'PENDING' }, data: { status: 'EXPIRED' } });
 
+    const payer = await this.prisma.user.findUniqueOrThrow({
+      where: { id: userId },
+      select: { email: true, name: true, kycProfile: { select: { firstName: true, lastName: true } } },
+    });
     const initiated = await this.payments.initiateFunding({
       reference: randomUUID(),
       provider: input.provider,
@@ -55,6 +59,12 @@ export class FundingService {
       amount: quote.total,
       currency: quote.currency,
       description: `Mesura card funding ${card.label}`,
+      // Funding requires a verified identity, so the KYC names are set; the account name is a fallback.
+      customer: {
+        firstName: payer.kycProfile?.firstName ?? payer.name,
+        lastName: payer.kycProfile?.lastName ?? payer.name,
+        email: payer.email,
+      },
     });
 
     const funding = await this.prisma.funding.create({

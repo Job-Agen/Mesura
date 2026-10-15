@@ -3,7 +3,7 @@
     "name": "Mesura",
     "slug": "mesura-sandbox",
     "scheme": "mesura",
-    "version": "0.5.0",
+    "version": "0.6.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -11,7 +11,7 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "africa.mesura.sandbox",
-      "buildNumber": "6"
+      "buildNumber": "7"
     },
     "android": {
       "package": "africa.mesura.sandbox",
@@ -22,7 +22,7 @@
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "versionCode": 6
+      "versionCode": 7
     },
     "web": {
       "bundler": "metro",

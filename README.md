@@ -145,4 +145,5 @@ pnpm --filter @mesura/api smoke        # end-to-end API scenario against a runni
 | `SERVICE_FEE_BPS` | `500` | Illustrative fee, in basis points (5 %). |
 | `FREE_CARDS_PER_PERSON` | `0` | Cards per person funded without the fee. A person = verified identity + Mobile Money number, tracked by fingerprints that survive account deletion. |
 | `FINGERPRINT_SECRET` | *(derived from `JWT_SECRET`)* | Key of those fingerprints (≥ 32 chars). Set it before real users sign up and never change it. |
+| `FEDAPAY_SECRET_KEY` | *(empty)* | [FedaPay](https://docs.fedapay.com) key for real Mobile Money. Empty = simulated. `sk_sandbox_…` = FedaPay test mode (test number approved, a number ending in 99 declined). `sk_live_…` = real money, refused unless `FEDAPAY_ALLOW_LIVE=true`. |
 | `FUNDING_EXPIRY_MINUTES` | `15` | A pending Mobile Money request expires after this. |

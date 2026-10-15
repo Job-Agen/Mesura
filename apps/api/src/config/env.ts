@@ -28,17 +28,30 @@ const envSchema = z.object({
   /** Shown on the public legal pages (privacy policy, account deletion). */
   LEGAL_PUBLISHER: z.string().default(''),
   SUPPORT_EMAIL: z.string().default(''),
+  /**
+   * FedaPay secret key (https://docs.fedapay.com). Empty: Mobile Money is simulated in-process.
+   * sk_sandbox_… talks to FedaPay's test environment; a sk_live_… key moves real money and is
+   * refused unless FEDAPAY_ALLOW_LIVE=true.
+   */
+  FEDAPAY_SECRET_KEY: z.string().default(''),
+  FEDAPAY_ALLOW_LIVE: booleanString,
   /** Resend (https://resend.com) API key; without it, password reset e-mails are not sent. */
   RESEND_API_KEY: z.string().default(''),
   /** Sender of transactional e-mails; must be on a domain verified in Resend. */
   EMAIL_FROM: z.string().default('Mesura <onboarding@resend.dev>'),
 });
 
+/** Cross-field rules, checked after each variable is valid on its own. */
+const checkedEnvSchema = envSchema.refine(
+  (env) => !env.FEDAPAY_SECRET_KEY.startsWith('sk_live_') || env.FEDAPAY_ALLOW_LIVE,
+  { path: ['FEDAPAY_SECRET_KEY'], message: 'a live FedaPay key moves real money: set FEDAPAY_ALLOW_LIVE=true to use it' },
+);
+
 export type AppEnv = z.infer<typeof envSchema>;
 
 /** Validates process.env once at boot; fails fast with a readable message. */
 export function loadEnv(source: NodeJS.ProcessEnv = process.env): AppEnv {
-  const parsed = envSchema.safeParse(source);
+  const parsed = checkedEnvSchema.safeParse(source);
   if (!parsed.success) {
     const details = parsed.error.issues.map((i) => `  - ${i.path.join('.')}: ${i.message}`).join('\n');
     throw new Error(`Invalid environment configuration:\n${details}`);

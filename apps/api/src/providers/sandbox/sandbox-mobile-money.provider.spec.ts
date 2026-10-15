@@ -8,6 +8,7 @@ const request = {
   amount: 15_750,
   currency: 'XOF' as const,
   description: 'test',
+  customer: { firstName: 'Ama', lastName: 'Kodjo', email: 'ama@test.dev' },
 };
 
 function provider(autoConfirmSeconds: number) {
