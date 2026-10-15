@@ -82,6 +82,15 @@ export default function CardDetails() {
             </>
           ) : null}
 
+          {c.status === 'ACTIVE' || c.status === 'FROZEN' ? (
+            <Button
+              label="Voir les informations de la carte"
+              icon="card-outline"
+              variant="secondary"
+              onPress={() => router.push({ pathname: '/cards/[id]/details', params: { id } })}
+            />
+          ) : null}
+
           <Button
             label="Simuler un paiement en ligne"
             icon="flask-outline"

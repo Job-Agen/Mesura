@@ -7,7 +7,7 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import type { CardDto, CreateCardDraftInput, UpdateCardRulesInput } from '@mesura/shared';
+import type { CardDto, CardSecretsDto, CreateCardDraftInput, UpdateCardRulesInput } from '@mesura/shared';
 import { KycService } from '../kyc/kyc.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CARD_ISSUER_PROVIDER, type CardIssuerProvider } from '../providers/card-issuer-provider.interface';
@@ -162,6 +162,31 @@ export class CardsService {
       data: { maxAmount: input.maxAmount, maxTransactionCount: input.maxTransactionCount },
     });
     return this.get(userId, cardId);
+  }
+
+  /**
+   * Full card details for the "show card details" screen. Only usable cards are revealed; the
+   * result is returned once and never stored or logged.
+   */
+  async reveal(userId: string, cardId: string): Promise<CardSecretsDto> {
+    await this.expireOverdueCards(userId);
+    const card = await this.findOwned(userId, cardId);
+    if ((card.status !== 'ACTIVE' && card.status !== 'FROZEN') || !card.providerCardId || !card.last4) {
+      throw new ConflictException("Les informations ne sont disponibles que pour une carte active ou gelée");
+    }
+    const [secrets, kyc] = await Promise.all([
+      this.issuer.revealCard(card.providerCardId, card.last4, card.expiresAt),
+      this.prisma.kycProfile.findUnique({ where: { userId }, select: { firstName: true, lastName: true } }),
+    ]);
+    const holderName = [kyc?.firstName, kyc?.lastName].filter(Boolean).join(' ').toUpperCase();
+    return {
+      number: secrets.pan,
+      expiryMonth: secrets.expiryMonth,
+      expiryYear: secrets.expiryYear,
+      cvv: secrets.cvv,
+      holderName,
+      demo: secrets.demo,
+    };
   }
 
   /** Loads a card owned by the user. Other users' cards are reported as not found. */
