@@ -6,7 +6,7 @@ export interface LegalContact {
   sandbox: boolean;
 }
 
-const UPDATED = '12 octobre 2026';
+const UPDATED = '15 octobre 2026';
 
 const escape = (s: string) => s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 
@@ -45,8 +45,8 @@ function contactLine(c: LegalContact): string {
 function sandboxNote(c: LegalContact): string {
   return c.sandbox
     ? `<p class="note">Mesura est actuellement une <strong>version de démonstration (sandbox)</strong> : aucun argent réel ne circule,
-aucune vraie carte bancaire n'est émise, aucune demande Mobile Money réelle n'est envoyée et aucune vérification d'identité
-n'est transmise à un prestataire.</p>`
+aucune vraie carte bancaire n'est émise, les recharges passent par le <strong>mode test</strong> de notre prestataire de paiement
+FedaPay (aucun montant n'est débité) et aucune vérification d'identité n'est transmise à un prestataire.</p>`
     : '';
 }
 
@@ -68,7 +68,9 @@ ${sandboxNote(c)}
   <li><strong>Recharges</strong> : opérateur Mobile Money choisi, numéro de téléphone utilisé et montants.</li>
   <li><strong>Paiements</strong> : marchand, montant, date, résultat (accepté ou bloqué) et motif d'un éventuel blocage.</li>
 </ul>
-<p>Mesura ne demande jamais votre code PIN Mobile Money et ne détient jamais de numéro de carte complet.
+<p>Mesura ne demande jamais votre code PIN Mobile Money : vous le saisissez uniquement sur votre téléphone, chez votre opérateur.
+Le numéro complet, la date d'expiration et le CVV de vos cartes ne sont jamais enregistrés par Mesura : ils sont affichés à
+votre demande, après vérification sur votre téléphone, puis effacés de l'écran.
 L'application n'utilise ni publicité, ni outil de suivi publicitaire, ni service d'analyse d'audience tiers.</p>
 
 <h2>Pourquoi ?</h2>
@@ -79,6 +81,16 @@ L'application n'utilise ni publicité, ni outil de suivi publicitaire, ni servic
   <li>Prévenir les abus (par exemple en limitant le nombre de tentatives, ou en n'autorisant qu'un compte par identité).</li>
 </ul>
 <p>Vos données ne sont ni vendues ni utilisées à des fins publicitaires.</p>
+
+<h2>Avec qui sont-elles partagées ?</h2>
+<p>Uniquement avec les prestataires nécessaires au service, qui les traitent pour notre compte :</p>
+<ul>
+  <li><strong>FedaPay</strong> (agrégateur de paiement Mobile Money, Bénin) : pour chaque recharge, votre prénom, nom, adresse
+  e-mail, numéro de téléphone et le montant, afin d'envoyer la demande de paiement à votre opérateur
+  (<a href="https://fedapay.com">fedapay.com</a>).</li>
+  <li><strong>Vercel</strong> et <strong>Neon</strong> : hébergement de l'application et de la base de données.</li>
+</ul>
+<p>Aucune autre entreprise ne reçoit vos données.</p>
 
 <h2>Où sont-elles stockées ?</h2>
 <p>Sur des serveurs situés dans l'Union européenne (Francfort, Allemagne), chez nos hébergeurs Vercel (application) et Neon

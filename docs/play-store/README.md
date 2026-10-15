@@ -114,7 +114,7 @@ notes qu'il s'agit d'une **démonstration sans transaction réelle**.
 **Sécurité des données**
 | Question | Réponse |
 |---|---|
-| Collecte ou partage de données ? | Collecte : oui. Partage avec des tiers : non |
+| Collecte ou partage de données ? | Collecte : oui. Partage : **non** — FedaPay (paiement Mobile Money), Vercel et Neon traitent les données pour le compte de Mesura : Google ne compte pas ces prestataires comme un « partage » |
 | Chiffrement en transit | Oui (HTTPS) |
 | Suppression possible par l'utilisateur | Oui — dans l'app et via `/legal/delete-account`. Seule une empreinte chiffrée irréversible (identité, numéro) est gardée pour la prévention de la fraude, ce que Google autorise si c'est déclaré |
 | Infos personnelles | Nom, adresse e-mail, numéro de téléphone, date de naissance — *fonctionnement de l'app, gestion du compte, prévention de la fraude* ; obligatoires |
