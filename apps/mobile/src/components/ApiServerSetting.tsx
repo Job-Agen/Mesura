@@ -17,18 +17,28 @@ export function ApiServerSetting() {
   const [status, setStatus] = useState<string | null>(null);
   const valid = /^https?:\/\/[^\s/]+/.test(value.trim());
 
+  /** Keeps the new address only if it answers like the Mesura API (GET /health). */
   const save = async () => {
-    const url = value.trim();
-    setApiBaseUrl(url);
-    await apiUrlStorage.set(url);
-    setCurrent(getApiBaseUrl());
+    const previous = getApiBaseUrl();
+    setApiBaseUrl(value.trim());
+    const candidate = getApiBaseUrl();
     setStatus('Vérification…');
+    let message: string;
     try {
-      const res = await fetch(`${getApiBaseUrl()}/me`);
-      setStatus(res.status === 401 ? "Connecté à l'API Mesura." : `Le serveur a répondu avec le statut ${res.status}.`);
+      const res = await fetch(`${candidate}/health`);
+      const body: unknown = res.ok ? await res.json().catch(() => null) : null;
+      if ((body as { service?: unknown } | null)?.service === 'mesura-api') {
+        await apiUrlStorage.set(candidate);
+        setCurrent(candidate);
+        setStatus("Connecté à l'API Mesura.");
+        return;
+      }
+      message = "Cette adresse répond, mais ce n'est pas l'API Mesura. Vérifiez l'adresse du serveur.";
     } catch {
-      setStatus('Impossible de joindre ce serveur depuis le téléphone.');
+      message = 'Impossible de joindre ce serveur depuis le téléphone.';
     }
+    setApiBaseUrl(previous === DEFAULT_API_URL ? null : previous);
+    setStatus(`${message} L'adresse précédente est conservée.`);
   };
 
   const reset = async () => {
