@@ -1,10 +1,12 @@
 import { router, useLocalSearchParams } from 'expo-router';
+import { formatMoney } from '@mesura/shared';
 import { StyleSheet, Text, View } from 'react-native';
 import { errorMessage } from '@/api/client';
 import { api } from '@/api/endpoints';
 import { useCard, useCardAction, useTransactions } from '@/api/queries';
 import { Button } from '@/components/Button';
 import { CardRules } from '@/components/CardRules';
+import { RefundSection } from '@/components/RefundSection';
 import { Screen } from '@/components/Screen';
 import { SectionHeader } from '@/components/SectionHeader';
 import { CardStatusBadge } from '@/components/StatusBadge';
@@ -31,9 +33,12 @@ export default function CardDetails() {
   const actionError = freeze.error ?? unfreeze.error ?? terminate.error;
 
   const onTerminate = async () => {
+    // What the card still holds: the amount funded minus what was spent.
+    const left = c ? Math.max(0, c.pricing.funding - c.policy.spentAmount) : 0;
     const ok = await confirmAction(
       'Clôturer cette carte ?',
-      'La carte cessera de fonctionner immédiatement. Cette action est irréversible.',
+      'La carte cessera de fonctionner immédiatement. Cette action est irréversible.' +
+        (left > 0 ? ` Le solde non dépensé (${formatMoney(left, c?.policy.currency)}) vous sera remboursé sur Mobile Money.` : ''),
       'Clôturer',
     );
     if (ok) terminate.mutate(id);
@@ -62,6 +67,7 @@ export default function CardDetails() {
 
           {c.status === 'FROZEN' ? <InfoNote>Cette carte est gelée. Tous les paiements sont bloqués jusqu'à ce que vous la dégeliez.</InfoNote> : null}
           {c.status === 'EXPIRED' || c.status === 'TERMINATED' ? <InfoNote>{CLOSED_MESSAGE[c.status]}</InfoNote> : null}
+          <RefundSection card={c} />
 
           <Surface>
             <CardRules card={c} mode="live" />

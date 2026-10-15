@@ -66,6 +66,8 @@ pay "$CARD" CANVA 15001 | j "(d['status'], d.get('reason'))"
 pay "$CARD" CANVA 5650 | j "(d['status'], d.get('reason'))"
 curl -s "$A/cards/$CARD" -H "$H" | j "(d['status'], d['terminationReason'], d['policy']['spentAmount'], d['policy']['remainingLimit'])"
 pay "$CARD" CANVA 100 | j "(d['status'], d.get('reason'))"
+echo "-- refund of the unspent balance to the TMoney number that funded it (expect 9350 SENT)"
+curl -s "$A/cards/$CARD" -H "$H" | j "(d['refund']['amount'], d['refund']['status'], d['refund']['phone'])"
 
 echo "== 5-payment card: freeze / unfreeze / tighten rules / terminate"
 C2=$(post /cards/draft '{"maxAmount":20000,"maxTransactionCount":5,"durationMinutes":60,"merchantRestriction":null}' | j "d['id']")
@@ -81,6 +83,11 @@ curl -s -X DELETE "$A/cards/$C2" -H "$H" | j "(d['status'], d['terminationReason
 echo "-- details of a terminated card (expect 409)"
 post "/cards/$C2/reveal" | j "(d['statusCode'], d['message'])"
 pay "$C2" Netflix 100 | j "(d['status'], d.get('reason'))"
+echo "-- refund: Flooz cannot receive payouts (expect 17000 ACTION_REQUIRED), a failing number, then a TMoney number"
+curl -s "$A/cards/$C2" -H "$H" | j "(d['refund']['amount'], d['refund']['status'], d['refund']['phone'])"
+post "/cards/$C2/refund" '{"phone":"+228 90 12 34 99"}' | j "d['refund']['status']"
+post "/cards/$C2/refund" '{"phone":"+228 90 12 34 56"}' | j "(d['refund']['status'], d['refund']['phone'])"
+post "/cards/$C2/refund" '{"phone":"+228 90 12 34 56"}' | j "(d['statusCode'], d['message'])"
 
 echo "== activity"
 curl -s "$A/transactions" -H "$H" | j "len(d)"
@@ -100,8 +107,14 @@ curl -s -X POST "$A/auth/forgot-password" -H "$JSON" -d "{\"email\":\"$EMAIL\"}"
 curl -s -X POST "$A/auth/forgot-password" -H "$JSON" -d '{"email":"nobody@test.dev"}' | j "d"
 curl -s -X POST "$A/auth/reset-password" -H "$JSON" \
   -d "{\"email\":\"$EMAIL\",\"code\":\"000000\",\"password\":\"password456\"}" | j "(d['statusCode'], d['message'])"
-echo "== account deletion (wrong password: 403, then 204, then the token no longer works)"
+echo "== account deletion (wrong password: 403; a Flooz-funded active card: closed, 409 until a TMoney number is given; then 204)"
 curl -s -X DELETE "$A/me" -H "$H" -H "$JSON" -d '{"password":"not-my-password"}' | j "(d['statusCode'], d['message'])"
+C3=$(post /cards/draft '{"maxAmount":5000,"maxTransactionCount":null,"durationMinutes":60,"merchantRestriction":null}' | j "d['id']")
+F3=$(post "/cards/$C3/fund" '{"provider":"MOOV_MONEY","phone":"+22897000000"}' | j "d['id']")
+post "/sandbox/funding/$F3/confirm" | j "d['status']"
+curl -s -X DELETE "$A/me" -H "$H" -H "$JSON" -d '{"password":"password123"}' | j "(d['statusCode'], d['message'])"
+curl -s "$A/cards/$C3" -H "$H" | j "(d['status'], d['refund']['amount'], d['refund']['status'])"
+post "/cards/$C3/refund" '{"phone":"+228 90 12 34 56"}' | j "d['refund']['status']"
 curl -s -o /dev/null -w '%{http_code}\n' -X DELETE "$A/me" -H "$H" -H "$JSON" -d '{"password":"password123"}'
 curl -s "$A/me" -H "$H" | j "(d['statusCode'], d['message'])"
 

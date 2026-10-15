@@ -35,6 +35,11 @@ const envSchema = z.object({
    */
   FEDAPAY_SECRET_KEY: z.string().default(''),
   FEDAPAY_ALLOW_LIVE: booleanString,
+  /**
+   * Send refunds with FedaPay payouts. Payouts are enabled per account by FedaPay's support; until
+   * then refunds are simulated. Required with a live key: real money in, simulated money out is refused.
+   */
+  FEDAPAY_PAYOUTS_ENABLED: booleanString,
   /** Resend (https://resend.com) API key; without it, password reset e-mails are not sent. */
   RESEND_API_KEY: z.string().default(''),
   /** Sender of transactional e-mails; must be on a domain verified in Resend. */
@@ -42,10 +47,15 @@ const envSchema = z.object({
 });
 
 /** Cross-field rules, checked after each variable is valid on its own. */
-const checkedEnvSchema = envSchema.refine(
-  (env) => !env.FEDAPAY_SECRET_KEY.startsWith('sk_live_') || env.FEDAPAY_ALLOW_LIVE,
-  { path: ['FEDAPAY_SECRET_KEY'], message: 'a live FedaPay key moves real money: set FEDAPAY_ALLOW_LIVE=true to use it' },
-);
+const checkedEnvSchema = envSchema
+  .refine((env) => !env.FEDAPAY_SECRET_KEY.startsWith('sk_live_') || env.FEDAPAY_ALLOW_LIVE, {
+    path: ['FEDAPAY_SECRET_KEY'],
+    message: 'a live FedaPay key moves real money: set FEDAPAY_ALLOW_LIVE=true to use it',
+  })
+  .refine((env) => !env.FEDAPAY_SECRET_KEY.startsWith('sk_live_') || env.FEDAPAY_PAYOUTS_ENABLED, {
+    path: ['FEDAPAY_PAYOUTS_ENABLED'],
+    message: 'with a live FedaPay key, refunds must be real: enable FedaPay payouts and set FEDAPAY_PAYOUTS_ENABLED=true',
+  });
 
 export type AppEnv = z.infer<typeof envSchema>;
 

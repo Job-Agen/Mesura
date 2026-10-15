@@ -13,6 +13,7 @@ import type {
   SimulateTransactionInput,
   SimulateTransactionResponseDto,
   TransactionDto,
+  RefundDestinationInput,
   UpdateCardRulesInput,
   UserDto,
   DeleteAccountInput,
@@ -46,6 +47,7 @@ export const api = {
   freezeCard: (id: string) => request<CardDto>('POST', `/cards/${id}/freeze`),
   unfreezeCard: (id: string) => request<CardDto>('POST', `/cards/${id}/unfreeze`),
   terminateCard: (id: string) => request<CardDto>('DELETE', `/cards/${id}`),
+  redirectRefund: (id: string, input: RefundDestinationInput) => request<CardDto>('POST', `/cards/${id}/refund`, input),
   updateRules: (id: string, input: UpdateCardRulesInput) => request<CardDto>('PATCH', `/cards/${id}/rules`, input),
 
   funding: (id: string) => request<FundingDto>('GET', `/funding/${id}`),

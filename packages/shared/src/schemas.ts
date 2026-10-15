@@ -106,6 +106,12 @@ export const fundCardSchema = z.object({
 });
 export type FundCardInput = z.infer<typeof fundCardSchema>;
 
+/** Where to send a card's unspent balance when it cannot go back to the wallet that funded it. */
+export const refundDestinationSchema = z.object({
+  phone: togoPhoneSchema,
+});
+export type RefundDestinationInput = z.infer<typeof refundDestinationSchema>;
+
 /** Rules can only be tightened after funding — never loosened. */
 export const updateCardRulesSchema = z
   .object({

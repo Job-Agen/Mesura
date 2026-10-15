@@ -5,6 +5,7 @@ import { iso } from '../common/iso';
 export const cardInclude = {
   policy: { include: { merchant: true } },
   fundings: { where: { status: 'CONFIRMED' }, orderBy: { confirmedAt: 'desc' }, take: 1 },
+  refund: true,
 } satisfies Prisma.CardInclude;
 
 export type CardWithRelations = Prisma.CardGetPayload<{ include: typeof cardInclude }>;
@@ -48,5 +49,17 @@ export function toCardDto(card: CardWithRelations, quote: (funding: number) => P
       expiresAt: iso(policy.expiresAt),
     },
     pricing,
+    refund: card.refund
+      ? {
+          id: card.refund.id,
+          amount: card.refund.amount,
+          currency: card.refund.currency,
+          provider: card.refund.provider,
+          phone: card.refund.phone,
+          status: card.refund.status,
+          createdAt: iso(card.refund.createdAt),
+          sentAt: iso(card.refund.sentAt),
+        }
+      : null,
   };
 }

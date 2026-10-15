@@ -58,6 +58,13 @@ enum DeclineReason {
   MERCHANT_NOT_ALLOWED
 }
 
+enum RefundStatus {
+  PENDING
+  SENT
+  FAILED
+  ACTION_REQUIRED
+}
+
 enum MobileMoneyProvider {
   TMONEY
   FLOOZ
@@ -164,6 +171,7 @@ model Card {
   policy            CardPolicy?
   fundings          Funding[]
   transactions      Transaction[]
+  refund            Refund?
 
   @@index([userId, createdAt])
 }
@@ -211,6 +219,26 @@ model Funding {
 
   @@index([cardId])
   @@index([userId, createdAt])
+}
+
+/// Unspent balance sent back to Mobile Money once the card has ended. At most one per card.
+model Refund {
+  id                String              @id @default(cuid())
+  cardId            String              @unique
+  card              Card                @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  amount            Int
+  currency          Currency            @default(XOF)
+  provider          MobileMoneyProvider
+  /// Null while the user has not given a number refunds can be sent to (ACTION_REQUIRED).
+  phone             String?
+  status            RefundStatus
+  /// Payout reference at the payment provider; a new one is set on each attempt.
+  providerReference String?             @unique
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  sentAt            DateTime?
+
+  @@index([status])
 }
 
 model Transaction {

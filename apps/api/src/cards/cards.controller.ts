@@ -2,10 +2,12 @@ import { Body, Controller, Delete, Get, Header, HttpCode, Param, Patch, Post } f
 import { Throttle } from '@nestjs/throttler';
 import {
   createCardDraftSchema,
+  refundDestinationSchema,
   updateCardRulesSchema,
   type CardDto,
   type CardSecretsDto,
   type CreateCardDraftInput,
+  type RefundDestinationInput,
   type UpdateCardRulesInput,
 } from '@mesura/shared';
 import { CurrentUserId } from '../common/auth-user';
@@ -62,6 +64,18 @@ export class CardsController {
     @Body(new ZodValidationPipe(updateCardRulesSchema)) body: UpdateCardRulesInput,
   ): Promise<CardDto> {
     return this.cards.updateRules(userId, id, body);
+  }
+
+  /** Sends the unspent balance to a number the user gives, when it could not go back to the funding wallet. */
+  @Post(':id/refund')
+  @HttpCode(200)
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  redirectRefund(
+    @CurrentUserId() userId: string,
+    @Param('id') id: string,
+    @Body(new ZodValidationPipe(refundDestinationSchema)) body: RefundDestinationInput,
+  ): Promise<CardDto> {
+    return this.cards.redirectRefund(userId, id, body.phone);
   }
 
   /** Terminates the card. The record is kept for the activity history. */
