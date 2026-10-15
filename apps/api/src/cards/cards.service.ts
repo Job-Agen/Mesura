@@ -11,6 +11,7 @@ import type { CardDto, CardSecretsDto, CreateCardDraftInput, UpdateCardRulesInpu
 import { KycService } from '../kyc/kyc.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CARD_ISSUER_PROVIDER, type CardIssuerProvider } from '../providers/card-issuer-provider.interface';
+import { RefundsService } from '../refunds/refunds.service';
 import { cardInclude, toCardDto, type CardWithRelations } from './card.presenter';
 import { PricingService } from './pricing.service';
 
@@ -24,12 +25,13 @@ export class CardsService {
     private readonly prisma: PrismaService,
     private readonly pricing: PricingService,
     private readonly kyc: KycService,
+    private readonly refunds: RefundsService,
     @Inject(CARD_ISSUER_PROVIDER) private readonly issuer: CardIssuerProvider,
   ) {}
 
   /** Cards the user has funded (drafts waiting for funding are not listed). */
   async list(userId: string): Promise<CardDto[]> {
-    await this.expireOverdueCards(userId);
+    await this.settle(userId);
     const cards = await this.prisma.card.findMany({
       where: { userId, status: { not: 'PENDING_FUNDING' } },
       include: cardInclude,
@@ -39,7 +41,7 @@ export class CardsService {
   }
 
   async get(userId: string, cardId: string): Promise<CardDto> {
-    await this.expireOverdueCards(userId);
+    await this.settle(userId);
     return this.present(await this.findOwned(userId, cardId));
   }
 
@@ -133,6 +135,33 @@ export class CardsService {
     return this.get(userId, cardId);
   }
 
+  async redirectRefund(userId: string, cardId: string, phone: string): Promise<CardDto> {
+    await this.findOwned(userId, cardId);
+    await this.refunds.redirect(userId, cardId, phone);
+    return this.get(userId, cardId);
+  }
+
+  /**
+   * Before an account is deleted: closes its usable cards and refunds what they hold. Returns the
+   * amount still waiting for a number to be sent to (it would be lost with the account).
+   */
+  async closeAllForDeletion(userId: string): Promise<number> {
+    const open = await this.prisma.card.findMany({ where: { userId, status: { in: ['ACTIVE', 'FROZEN'] } } });
+    for (const card of open) {
+      const { count } = await this.prisma.card.updateMany({
+        where: { id: card.id, status: card.status },
+        data: { status: 'TERMINATED', terminationReason: 'USER_REQUESTED' },
+      });
+      if (count === 1 && card.providerCardId) await this.issuer.terminateCard(card.providerCardId);
+    }
+    await this.settle(userId);
+    const waiting = await this.prisma.refund.aggregate({
+      where: { card: { userId }, status: { in: ['ACTION_REQUIRED', 'FAILED'] } },
+      _sum: { amount: true },
+    });
+    return waiting._sum.amount ?? 0;
+  }
+
   /** Rules can only be tightened: a lower limit or fewer payments, never more. */
   async updateRules(userId: string, cardId: string, input: UpdateCardRulesInput): Promise<CardDto> {
     const card = await this.findOwned(userId, cardId);
@@ -198,6 +227,12 @@ export class CardsService {
 
   present(card: CardWithRelations): CardDto {
     return toCardDto(card, (funding) => this.pricing.quote(funding, card.policy?.currency ?? 'XOF'));
+  }
+
+  /** Brings the user's cards up to date: expiry, then refunds of the cards that have ended. */
+  private async settle(userId: string): Promise<void> {
+    await this.expireOverdueCards(userId);
+    await this.refunds.settle(userId);
   }
 
   /** Lazily moves cards past their expiry to EXPIRED. */

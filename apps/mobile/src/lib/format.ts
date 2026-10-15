@@ -58,3 +58,11 @@ export const STATUS_LABEL: Record<CardStatus, string> = {
 export function merchantLabel(card: Pick<CardDto, 'policy'>): string {
   return card.policy.merchantRestriction ? `${card.policy.merchantRestriction.name} uniquement` : 'Partout';
 }
+
+/** "+22890123456" → "+228 90 12 34 56"; anything else is returned as is. */
+export function formatPhone(raw: string): string {
+  const digits = raw.replace(/\D/g, '');
+  if (digits.length !== 11 || !digits.startsWith('228')) return raw;
+  const n = digits.slice(3);
+  return `+228 ${n.slice(0, 2)} ${n.slice(2, 4)} ${n.slice(4, 6)} ${n.slice(6, 8)}`;
+}

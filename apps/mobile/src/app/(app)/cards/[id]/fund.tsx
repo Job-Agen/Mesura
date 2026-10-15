@@ -21,7 +21,7 @@ import { Screen } from '@/components/Screen';
 import { ErrorState, InfoNote, InlineError, Skeleton } from '@/components/States';
 import { Surface } from '@/components/Surface';
 import { TextField } from '@/components/TextField';
-import { paymentsLabel } from '@/lib/format';
+import { formatPhone, paymentsLabel } from '@/lib/format';
 import { radius, type } from '@/theme/tokens';
 
 const PROVIDER_TINT: Record<Provider, { bg: string; fg: string }> = {
@@ -29,13 +29,6 @@ const PROVIDER_TINT: Record<Provider, { bg: string; fg: string }> = {
   FLOOZ: { bg: '#141B2D', fg: '#FFCC00' },
   MOOV_MONEY: { bg: '#E8F0FB', fg: '#0055A5' },
 };
-
-function formatPhone(raw: string): string {
-  const digits = raw.replace(/\D/g, '');
-  if (digits.length !== 11 || !digits.startsWith('228')) return raw;
-  const n = digits.slice(3);
-  return `+228 ${n.slice(0, 2)} ${n.slice(2, 4)} ${n.slice(4, 6)} ${n.slice(6, 8)}`;
-}
 
 export default function Fund() {
   const { id } = useLocalSearchParams<{ id: string }>();

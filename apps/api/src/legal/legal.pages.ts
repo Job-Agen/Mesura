@@ -65,7 +65,7 @@ ${sandboxNote(c)}
   <li><strong>Compte</strong> : prénom, adresse e-mail, mot de passe (stocké uniquement sous forme chiffrée irréversible).</li>
   <li><strong>Identité</strong> : prénom, nom, date de naissance, pays et numéro de mobile, saisis lors de la vérification d'identité.</li>
   <li><strong>Cartes</strong> : les règles que vous fixez (plafond, marchand, nombre de paiements, durée) et l'état de chaque carte.</li>
-  <li><strong>Recharges</strong> : opérateur Mobile Money choisi, numéro de téléphone utilisé et montants.</li>
+  <li><strong>Recharges et remboursements</strong> : opérateur Mobile Money choisi, numéros de téléphone utilisés et montants.</li>
   <li><strong>Paiements</strong> : marchand, montant, date, résultat (accepté ou bloqué) et motif d'un éventuel blocage.</li>
 </ul>
 <p>Mesura ne demande jamais votre code PIN Mobile Money : vous le saisissez uniquement sur votre téléphone, chez votre opérateur.
@@ -86,8 +86,8 @@ L'application n'utilise ni publicité, ni outil de suivi publicitaire, ni servic
 <p>Uniquement avec les prestataires nécessaires au service, qui les traitent pour notre compte :</p>
 <ul>
   <li><strong>FedaPay</strong> (agrégateur de paiement Mobile Money, Bénin) : pour chaque recharge, votre prénom, nom, adresse
-  e-mail, numéro de téléphone et le montant, afin d'envoyer la demande de paiement à votre opérateur
-  (<a href="https://fedapay.com">fedapay.com</a>).</li>
+  e-mail, numéro de téléphone et le montant, afin d'envoyer la demande de paiement à votre opérateur ; les mêmes
+  informations pour chaque remboursement du solde non dépensé d'une carte (<a href="https://fedapay.com">fedapay.com</a>).</li>
   <li><strong>Vercel</strong> et <strong>Neon</strong> : hébergement de l'application et de la base de données.</li>
 </ul>
 <p>Aucune autre entreprise ne reçoit vos données.</p>
@@ -172,6 +172,11 @@ Une carte se désactive automatiquement à la fin de sa durée ou après son der
 <h2>4. Recharges et frais</h2>
 <p>Les cartes se rechargent par Mobile Money. Les frais de service sont affichés avant chaque paiement ; en version de
 démonstration, ils sont indicatifs et rien n'est débité. Mesura ne vous demande jamais votre code PIN Mobile Money.</p>
+<p>Quand une carte prend fin (clôturée, expirée ou après son dernier paiement autorisé), le montant rechargé qui n'a pas
+été dépensé vous est renvoyé sur Mobile Money, sans frais supplémentaires. Les frais de service payés à la recharge ne sont
+pas remboursés. Le remboursement est envoyé sur le numéro qui a rechargé la carte si son opérateur peut recevoir des
+virements (TMoney aujourd'hui) ; sinon, vous indiquez un numéro TMoney dans l'application.
+${c.sandbox ? 'En version de démonstration, le remboursement est simulé : aucun argent n\'est envoyé.' : ''}</p>
 
 <h2>5. Utilisation interdite</h2>
 <p>Il est interdit d'utiliser Mesura pour une activité illégale, frauduleuse ou pour contourner les mesures de sécurité

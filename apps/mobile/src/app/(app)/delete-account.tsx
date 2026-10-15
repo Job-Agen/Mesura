@@ -49,8 +49,8 @@ export default function DeleteAccount() {
         chiffrée de votre identité et de votre numéro est gardée, pour qu'un nouveau compte ne contourne pas les limites.
       </Text>
       <InfoNote>
-        Les montants non dépensés sur vos cartes ne sont pas remboursés automatiquement. Clôturez ou utilisez vos cartes avant
-        de supprimer votre compte.
+        Vos cartes encore actives sont clôturées et leur solde non dépensé est renvoyé sur votre Mobile Money. Si une carte
+        a été rechargée avec Flooz ou Moov Money, indiquez d'abord un numéro TMoney sur cette carte pour recevoir son solde.
       </InfoNote>
       <TextField
         label="Confirmez avec votre mot de passe"

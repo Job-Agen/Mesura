@@ -95,9 +95,12 @@ describe('FedaPayPaymentProvider', () => {
 describe('FedaPay configuration', () => {
   const base = { DATABASE_URL: 'postgres://x', JWT_SECRET: 'x'.repeat(32) };
 
-  it('refuses a live key unless explicitly allowed', () => {
+  it('refuses a live key unless explicitly allowed, and without real refunds', () => {
     expect(() => loadEnv({ ...base, FEDAPAY_SECRET_KEY: 'sk_live_x' })).toThrow(/FEDAPAY_ALLOW_LIVE/);
-    expect(loadEnv({ ...base, FEDAPAY_SECRET_KEY: 'sk_live_x', FEDAPAY_ALLOW_LIVE: 'true' }).FEDAPAY_SECRET_KEY).toBe('sk_live_x');
+    expect(() => loadEnv({ ...base, FEDAPAY_SECRET_KEY: 'sk_live_x', FEDAPAY_ALLOW_LIVE: 'true' })).toThrow(/FEDAPAY_PAYOUTS_ENABLED/);
+    expect(
+      loadEnv({ ...base, FEDAPAY_SECRET_KEY: 'sk_live_x', FEDAPAY_ALLOW_LIVE: 'true', FEDAPAY_PAYOUTS_ENABLED: 'true' }).FEDAPAY_SECRET_KEY,
+    ).toBe('sk_live_x');
     expect(loadEnv({ ...base, FEDAPAY_SECRET_KEY: 'sk_sandbox_x' }).FEDAPAY_SECRET_KEY).toBe('sk_sandbox_x');
   });
 });

@@ -4,6 +4,7 @@ import type {
   FundingStatus,
   KycStatus,
   MobileMoneyProvider,
+  RefundStatus,
   TerminationReason,
   TransactionStatus,
 } from './enums';
@@ -75,6 +76,21 @@ export interface CardDto {
   expiresAt: string;
   policy: CardPolicyDto;
   pricing: PricingDto;
+  /** Refund of the unspent balance, once the card has ended. Null while the card is usable or nothing is left. */
+  refund: RefundDto | null;
+}
+
+/** Unspent balance sent back to the user's Mobile Money. Fees are not refunded. */
+export interface RefundDto {
+  id: string;
+  amount: number;
+  currency: Currency;
+  provider: MobileMoneyProvider;
+  /** Null while the user has not given a number refunds can be sent to (ACTION_REQUIRED). */
+  phone: string | null;
+  status: RefundStatus;
+  createdAt: string;
+  sentAt: string | null;
 }
 
 /**

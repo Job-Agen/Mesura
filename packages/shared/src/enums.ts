@@ -63,6 +63,22 @@ export const MobileMoneyProvider = {
 } as const;
 export type MobileMoneyProvider = (typeof MobileMoneyProvider)[keyof typeof MobileMoneyProvider];
 
+/**
+ * Refund of the unspent balance once a card has ended.
+ * ACTION_REQUIRED: the card was funded with a wallet refunds cannot be sent to (see
+ * REFUND_PROVIDERS); the user gives a number on a supported wallet.
+ */
+export const RefundStatus = {
+  PENDING: 'PENDING',
+  SENT: 'SENT',
+  FAILED: 'FAILED',
+  ACTION_REQUIRED: 'ACTION_REQUIRED',
+} as const;
+export type RefundStatus = (typeof RefundStatus)[keyof typeof RefundStatus];
+
+/** Wallets refunds can be sent to. In Togo, FedaPay sends money to TMoney only. */
+export const REFUND_PROVIDERS: readonly MobileMoneyProvider[] = ['TMONEY'];
+
 export const MOBILE_MONEY_PROVIDER_LABELS: Record<MobileMoneyProvider, string> = {
   TMONEY: 'TMoney',
   FLOOZ: 'Flooz',
