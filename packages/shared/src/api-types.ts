@@ -77,6 +77,19 @@ export interface CardDto {
   pricing: PricingDto;
 }
 
+/**
+ * Full card details for a one-off display in the app. Never stored by Mesura, never logged.
+ * Sandbox: a demo number (demo = true) that no merchant accepts.
+ */
+export interface CardSecretsDto {
+  number: string;
+  expiryMonth: number;
+  expiryYear: number;
+  cvv: string;
+  holderName: string;
+  demo: boolean;
+}
+
 export interface FundingDto {
   id: string;
   cardId: string;

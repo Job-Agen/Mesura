@@ -53,6 +53,12 @@ curl -s "$A/funding/$FID" -H "$H" | j "(d['status'], d['total'])"
 echo "-- confirm Mobile Money"
 post "/sandbox/funding/$FID/confirm" | j "d['status']"
 curl -s "$A/cards/$CARD" -H "$H" | j "(d['status'], d['last4'])"
+echo "-- card details (demo number ending with the last4 shown, valid Luhn)"
+LAST4=$(curl -s "$A/cards/$CARD" -H "$H" | j "d['last4']")
+post "/cards/$CARD/reveal" | python3 -c "
+import sys,json; d=json.load(sys.stdin); n=d['number']
+luhn=sum((int(c) if i%2==0 else (int(c)*2-9 if int(c)*2>9 else int(c)*2)) for i,c in enumerate(reversed(n)))%10==0
+print(n.endswith('$LAST4'), luhn, len(d['cvv']), d['demo'])"
 
 echo "== payments on the one-payment Canva card"
 pay "$CARD" GOOGLE 5650 | j "(d['status'], d.get('reason'), d['transaction']['declineMessage'])"
@@ -72,6 +78,8 @@ pay "$C2" Netflix 3000 | j "(d['status'], d['transaction']['merchantName'])"
 curl -s -X PATCH "$A/cards/$C2/rules" -H "$H" -H "$JSON" -d '{"maxAmount":50000}' | j "(d['statusCode'], d['message'])"
 curl -s -X PATCH "$A/cards/$C2/rules" -H "$H" -H "$JSON" -d '{"maxAmount":10000,"maxTransactionCount":2}' | j "(d['policy']['maxAmount'], d['policy']['maxTransactionCount'])"
 curl -s -X DELETE "$A/cards/$C2" -H "$H" | j "(d['status'], d['terminationReason'])"
+echo "-- details of a terminated card (expect 409)"
+post "/cards/$C2/reveal" | j "(d['statusCode'], d['message'])"
 pay "$C2" Netflix 100 | j "(d['status'], d.get('reason'))"
 
 echo "== activity"

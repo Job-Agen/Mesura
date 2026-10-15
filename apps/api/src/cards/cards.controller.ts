@@ -1,8 +1,10 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Header, HttpCode, Param, Patch, Post } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import {
   createCardDraftSchema,
   updateCardRulesSchema,
   type CardDto,
+  type CardSecretsDto,
   type CreateCardDraftInput,
   type UpdateCardRulesInput,
 } from '@mesura/shared';
@@ -30,6 +32,15 @@ export class CardsController {
   @Get(':id')
   get(@CurrentUserId() userId: string, @Param('id') id: string): Promise<CardDto> {
     return this.cards.get(userId, id);
+  }
+
+  /** Full card details, shown on demand. POST and no-store so nothing caches them. */
+  @Post(':id/reveal')
+  @HttpCode(200)
+  @Header('Cache-Control', 'no-store')
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
+  reveal(@CurrentUserId() userId: string, @Param('id') id: string): Promise<CardSecretsDto> {
+    return this.cards.reveal(userId, id);
   }
 
   @Post(':id/freeze')

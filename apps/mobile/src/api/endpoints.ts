@@ -1,6 +1,7 @@
 import type {
   AuthResponseDto,
   CardDto,
+  CardSecretsDto,
   CreateCardDraftInput,
   FundCardInput,
   FundingDto,
@@ -41,6 +42,7 @@ export const api = {
   card: (id: string) => request<CardDto>('GET', `/cards/${id}`),
   createDraft: (input: CreateCardDraftInput) => request<CardDto>('POST', '/cards/draft', input),
   fundCard: (id: string, input: FundCardInput) => request<FundingDto>('POST', `/cards/${id}/fund`, input),
+  revealCard: (id: string) => request<CardSecretsDto>('POST', `/cards/${id}/reveal`),
   freezeCard: (id: string) => request<CardDto>('POST', `/cards/${id}/freeze`),
   unfreezeCard: (id: string) => request<CardDto>('POST', `/cards/${id}/unfreeze`),
   terminateCard: (id: string) => request<CardDto>('DELETE', `/cards/${id}`),

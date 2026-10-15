@@ -31,6 +31,10 @@
     "plugins": [
       "expo-router",
       "expo-secure-store",
+      [
+        "expo-local-authentication",
+        { "faceIDPermission": "Mesura utilise Face ID pour afficher les informations de vos cartes." }
+      ],
       "./plugins/with-sandbox-cleartext",
       [
         "expo-splash-screen",
