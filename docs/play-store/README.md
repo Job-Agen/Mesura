@@ -79,6 +79,9 @@ Version actuelle : **0.6.0** (versionCode **7**). Chaque nouvel envoi sur Play d
 >
 > Gelez une carte en un geste, durcissez ses règles à tout moment ou clôturez-la quand vous voulez.
 >
+> Besoin du numéro pour payer ? Affichez le numéro, la date d'expiration et le CVV pendant 30 secondes,
+> après vérification par l'empreinte, le visage ou le code de votre téléphone.
+>
 > Mesura ne vous demande jamais votre code PIN Mobile Money.
 >
 > ⚠️ Version de démonstration : aucun argent réel n'est débité, aucune vraie carte bancaire n'est émise
@@ -93,12 +96,16 @@ Version actuelle : **0.6.0** (versionCode **7**). Chaque nouvel envoi sur Play d
 |---|---|
 | `icon-512.png` | Icône de l'application (512 × 512) |
 | `feature-graphic.png` | Image de présentation (1024 × 500) |
-| `01-bienvenue.png` … `07-activite.png` | Captures téléphone (1080 × 2160), 2 à 8 requises |
+| `01-bienvenue.png` … `08-infos-carte.png` | Captures téléphone (1080 × 2160), 2 à 8 requises : envoyez les 8, dans l'ordre |
 
 ## 4. Questionnaires de la Play Console
 
 **Accès à l'application** — l'app exige une connexion. Fournissez le compte de démo :
-`demo@mesura.test` / `demo1234` (identité déjà vérifiée, 4 cartes).
+`demo@mesura.test` / `demo1234` (identité déjà vérifiée, 4 cartes dont « Carte Meta Ads » active).
+Notes pour l'examinateur, à coller telles quelles :
+> Application de démonstration : aucun argent réel n'est débité. Les recharges passent par le mode test
+> de FedaPay et sont approuvées automatiquement. Pour voir le numéro d'une carte : Cartes → Carte Meta Ads →
+> « Voir les informations de la carte ». Pour créer une carte : Accueil → Créer une carte.
 
 **Annonces** : non, l'app ne contient pas de publicité.
 
@@ -111,16 +118,42 @@ L'app n'achète ni ne vend de produits numériques.
 **Fonctionnalités financières** : déclarez la gestion de cartes / paiements, en précisant dans les
 notes qu'il s'agit d'une **démonstration sans transaction réelle**.
 
-**Sécurité des données**
+**Sécurité des données** (*Contenu de l'application → Sécurité des données*)
+
+*Vue d'ensemble*
 | Question | Réponse |
 |---|---|
-| Collecte ou partage de données ? | Collecte : oui. Partage : **non** — FedaPay (paiement Mobile Money), Vercel et Neon traitent les données pour le compte de Mesura : Google ne compte pas ces prestataires comme un « partage » |
-| Chiffrement en transit | Oui (HTTPS) |
-| Suppression possible par l'utilisateur | Oui — dans l'app et via `/legal/delete-account`. Seule une empreinte chiffrée irréversible (identité, numéro) est gardée pour la prévention de la fraude, ce que Google autorise si c'est déclaré |
-| Infos personnelles | Nom, adresse e-mail, numéro de téléphone, date de naissance — *fonctionnement de l'app, gestion du compte, prévention de la fraude* ; obligatoires |
-| Infos financières | Historique d'achats (paiements simulés), autres infos financières (règles des cartes, recharges) — *fonctionnement de l'app* ; obligatoires |
-| Position, contacts, photos, fichiers, audio, santé, identifiants publicitaires | Non collectés |
-| Activité dans l'app / diagnostics / statistiques | Non collectés (pas d'outil d'analyse tiers) |
+| L'app collecte-t-elle ou partage-t-elle des données utilisateur des types requis ? | **Oui** |
+| Toutes les données collectées sont-elles chiffrées en transit ? | **Oui** (HTTPS uniquement) |
+| Proposez-vous un moyen de demander la suppression des données ? | **Oui** — *Profil → Supprimer mon compte*, et `https://mesura-38r8.vercel.app/legal/delete-account` |
+
+*Types de données* — cochez uniquement ceux-ci. Pour chacun : **Collectées : oui · Partagées : non ·
+Traitement éphémère : non · Obligatoire** (l'utilisateur ne peut pas refuser).
+
+| Catégorie → type | Finalités à cocher |
+|---|---|
+| Infos personnelles → **Nom** | Fonctionnement de l'app, Gestion du compte, Prévention de la fraude, sécurité et conformité |
+| Infos personnelles → **Adresse e-mail** | Fonctionnement de l'app, Gestion du compte, Communications du développeur (code « mot de passe oublié ») |
+| Infos personnelles → **Numéro de téléphone** | Fonctionnement de l'app (recharge Mobile Money), Prévention de la fraude, sécurité et conformité |
+| Infos personnelles → **Autres infos** (date de naissance, pays) | Gestion du compte, Prévention de la fraude, sécurité et conformité |
+| Infos financières → **Historique des achats** (paiements par carte) | Fonctionnement de l'app |
+| Infos financières → **Autres infos financières** (recharges, plafonds et règles des cartes) | Fonctionnement de l'app |
+
+*Pourquoi « Partagées : non »* : FedaPay (paiement Mobile Money), Vercel (hébergement) et Neon (base de
+données) traitent ces données **pour le compte de Mesura**. Google ne compte pas les prestataires comme un
+partage. Ils sont nommés dans la politique de confidentialité.
+
+*À ne pas cocher*
+| Type | Pourquoi |
+|---|---|
+| Infos de paiement de l'utilisateur (numéro de carte bancaire) | L'utilisateur n'en saisit aucune : les numéros affichés sont ceux des cartes que Mesura émet, jamais enregistrés sur le téléphone |
+| Position, contacts, photos et vidéos, fichiers, audio, messages, agenda, santé | Non collectés |
+| Activité dans l'app, historique de navigation, diagnostics, identifiants de l'appareil ou publicitaires | Non collectés (aucun outil d'analyse, de publicité ni de rapport de plantage) |
+| Empreinte digitale / visage | Vérifiés par Android sur le téléphone ; Mesura ne reçoit que « oui » ou « non » |
+
+*Conservation après suppression* : seule une empreinte chiffrée irréversible de l'identité et du numéro est
+gardée, pour empêcher la création répétée de comptes. C'est permis tant que la politique de
+confidentialité le dit, ce qui est le cas.
 
 ## 5. Mises à jour suivantes
 
