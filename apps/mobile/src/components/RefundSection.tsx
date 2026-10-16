@@ -15,7 +15,7 @@ import { Button } from './Button';
 import { RuleRow } from './RuleRow';
 import { InfoNote, InlineError } from './States';
 import { Surface } from './Surface';
-import { TextField } from './TextField';
+import { PhoneField } from './PhoneField';
 
 const STATUS_LABEL: Record<RefundDto['status'], string> = {
   PENDING: 'En cours',
@@ -27,7 +27,7 @@ const STATUS_LABEL: Record<RefundDto['status'], string> = {
 /** Refund of an ended card's unspent balance, and the form to send it elsewhere when it cannot go back. */
 export function RefundSection({ card }: { card: CardDto }) {
   const refund = card.refund;
-  const [phone, setPhone] = useState('+228 ');
+  const [phone, setPhone] = useState('');
   const parsed = refundDestinationSchema.shape.phone.safeParse(phone);
   const redirect = useCardAction((p: string) => api.redirectRefund(card.id, { phone: p }));
   if (!refund) return null;
@@ -58,14 +58,7 @@ export function RefundSection({ card }: { card: CardDto }) {
               ? "L'envoi a échoué. Vérifiez le numéro et réessayez, ou indiquez un autre numéro Mixx by Yas."
               : `Les remboursements ne peuvent être envoyés que sur Mixx by Yas (ex-TMoney). Indiquez un numéro Mixx by Yas pour recevoir ${formatMoney(refund.amount, refund.currency)}.`}
           </InfoNote>
-          <TextField
-            label="Numéro Mixx by Yas"
-            value={phone}
-            onChangeText={setPhone}
-            keyboardType="phone-pad"
-            autoComplete="tel"
-            error={phone.length > 5 && !parsed.success ? parsed.error.issues[0]?.message : null}
-          />
+          <PhoneField label="Numéro Mixx by Yas" value={phone} onChange={setPhone} />
           <InlineError message={redirect.error ? errorMessage(redirect.error) : null} />
           <Button
             label="Recevoir sur Mixx by Yas"

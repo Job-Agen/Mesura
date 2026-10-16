@@ -17,13 +17,13 @@ import { useCard, useMe } from '@/api/queries';
 import { Button } from '@/components/Button';
 import { MerchantAvatar } from '@/components/MerchantAvatar';
 import { OptionRow } from '@/components/OptionRow';
+import { PhoneField } from '@/components/PhoneField';
 import { ProviderLogo } from '@/components/ProviderLogo';
 import { PriceSummary } from '@/components/PriceSummary';
 import { Screen } from '@/components/Screen';
 import { ErrorState, InfoNote, InlineError, Skeleton } from '@/components/States';
 import { Surface } from '@/components/Surface';
-import { TextField } from '@/components/TextField';
-import { formatPhone, paymentsLabel } from '@/lib/format';
+import { paymentsLabel } from '@/lib/format';
 import { radius, type } from '@/theme/tokens';
 
 /** A line under each wallet's name, so people find it under the name they know. */
@@ -37,7 +37,7 @@ export default function Fund() {
   const card = useCard(id);
   const me = useMe();
   const [provider, setProvider] = useState<Provider>(MobileMoneyProvider.TMONEY);
-  const [phone, setPhone] = useState(me.data?.phone ? formatPhone(me.data.phone) : '+228 90 12 34 56');
+  const [phone, setPhone] = useState(me.data?.phone ?? '');
   const parsedPhone = fundCardSchema.shape.phone.safeParse(phone);
 
   const fund = useMutation({
@@ -95,14 +95,12 @@ export default function Fund() {
             ))}
           </View>
 
-          <TextField
-            label="Numéro de téléphone"
+          <PhoneField
+            label="Numéro Mobile Money"
             strongLabel
-            leading={<Text style={styles.flag}>🇹🇬</Text>}
             value={phone}
-            onChangeText={setPhone}
-            keyboardType="phone-pad"
-            error={phone.length > 5 && !parsedPhone.success ? parsedPhone.error.issues[0]?.message : null}
+            onChange={setPhone}
+            hint={`Le numéro ${MOBILE_MONEY_PROVIDER_LABELS[provider]} qui recevra la demande de paiement`}
           />
 
           <View>
@@ -122,5 +120,4 @@ const styles = StyleSheet.create({
   summary: { flexDirection: 'row', alignItems: 'center', gap: 14 },
   summaryAmount: { ...type.heading, fontSize: 19 },
   providers: { gap: 8 },
-  flag: { fontSize: 20 },
 });
