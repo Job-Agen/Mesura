@@ -10,6 +10,7 @@ import { Button } from '@/components/Button';
 import { Screen } from '@/components/Screen';
 import { InfoNote, InlineError } from '@/components/States';
 import { Surface } from '@/components/Surface';
+import { PhoneField } from '@/components/PhoneField';
 import { TextField } from '@/components/TextField';
 import { colors, type } from '@/theme/tokens';
 
@@ -24,7 +25,7 @@ export default function Kyc() {
   const [firstName, setFirstName] = useState(me.data?.name ?? '');
   const [lastName, setLastName] = useState('');
   const [dateOfBirth, setDateOfBirth] = useState('');
-  const [phone, setPhone] = useState(me.data?.phone ?? '+228 ');
+  const [phone, setPhone] = useState(me.data?.phone ?? '');
   const [errors, setErrors] = useState<Partial<Record<Field, string>>>({});
 
   const verify = useMutation({
@@ -91,15 +92,7 @@ export default function Kyc() {
         keyboardType="numbers-and-punctuation"
         maxLength={10}
       />
-      <TextField
-        label="Numéro de mobile"
-        value={phone}
-        onChangeText={setPhone}
-        error={errors.phone}
-        keyboardType="phone-pad"
-        autoComplete="tel"
-        hint="Numéro togolais, ex. +228 90 12 34 56"
-      />
+      <PhoneField label="Numéro de mobile" value={phone} onChange={setPhone} error={errors.phone} />
       <View style={styles.country}>
         <Text style={type.label}>Pays</Text>
         <Text style={type.body}>🇹🇬  Togo</Text>
