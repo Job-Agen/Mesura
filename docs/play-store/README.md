@@ -23,7 +23,7 @@ réponses aux questionnaires de la Play Console et procédure de signature.
 | Nous contacter | Profil (affiché dès que `SUPPORT_EMAIL` est renseigné) |
 | Visuels | `docs/play-store/assets/` |
 
-Version actuelle : **0.7.0** (versionCode **8**). Chaque nouvel envoi sur Play doit augmenter
+Version actuelle : **0.7.1** (versionCode **9**). Chaque nouvel envoi sur Play doit augmenter
 `android.versionCode` dans `apps/mobile/app.json`.
 
 ## 2. Avant le premier envoi
@@ -74,7 +74,7 @@ Version actuelle : **0.7.0** (versionCode **8**). Chaque nouvel envoi sur Play d
 > • COMBIEN DE FOIS — un paiement, cinq, ou jusqu'à l'expiration.
 > • COMBIEN DE TEMPS — 30 minutes, 24 heures, 7 jours… elle se désactive toute seule.
 >
-> Rechargez votre carte par Mobile Money (TMoney, Flooz, Moov Money). Si un paiement ne respecte pas vos
+> Rechargez votre carte par Mobile Money (Mixx by Yas, ex-TMoney, ou Flooz). Si un paiement ne respecte pas vos
 > règles, il est bloqué avant d'atteindre le marchand, et vous voyez pourquoi en clair.
 >
 > Gelez une carte en un geste, durcissez ses règles à tout moment ou clôturez-la quand vous voulez.

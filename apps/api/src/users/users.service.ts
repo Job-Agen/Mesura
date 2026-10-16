@@ -42,7 +42,7 @@ export class UsersService {
     const waiting = await this.cards.closeAllForDeletion(userId);
     if (waiting > 0) {
       throw new ConflictException(
-        `${formatMoney(waiting, 'XOF')} restent à vous rembourser. Indiquez un numéro TMoney sur la carte concernée, puis supprimez votre compte.`,
+        `${formatMoney(waiting, 'XOF')} restent à vous rembourser. Indiquez un numéro Mixx by Yas sur la carte concernée, puis supprimez votre compte.`,
       );
     }
     await this.prisma.user.delete({ where: { id: userId } });

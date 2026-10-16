@@ -50,7 +50,7 @@ export default function DeleteAccount() {
       </Text>
       <InfoNote>
         Vos cartes encore actives sont clôturées et leur solde non dépensé est renvoyé sur votre Mobile Money. Si une carte
-        a été rechargée avec Flooz ou Moov Money, indiquez d'abord un numéro TMoney sur cette carte pour recevoir son solde.
+        a été rechargée avec Flooz (Moov Money), indiquez d'abord un numéro Mixx by Yas (ex-TMoney) sur cette carte pour recevoir son solde.
       </InfoNote>
       <TextField
         label="Confirmez avec votre mot de passe"

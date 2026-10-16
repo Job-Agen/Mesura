@@ -5,6 +5,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import {
   formatDuration,
   formatMoney,
+  FUNDING_PROVIDERS,
   fundCardSchema,
   MOBILE_MONEY_PROVIDER_LABELS,
   MobileMoneyProvider,
@@ -16,6 +17,7 @@ import { useCard, useMe } from '@/api/queries';
 import { Button } from '@/components/Button';
 import { MerchantAvatar } from '@/components/MerchantAvatar';
 import { OptionRow } from '@/components/OptionRow';
+import { ProviderLogo } from '@/components/ProviderLogo';
 import { PriceSummary } from '@/components/PriceSummary';
 import { Screen } from '@/components/Screen';
 import { ErrorState, InfoNote, InlineError, Skeleton } from '@/components/States';
@@ -24,10 +26,10 @@ import { TextField } from '@/components/TextField';
 import { formatPhone, paymentsLabel } from '@/lib/format';
 import { radius, type } from '@/theme/tokens';
 
-const PROVIDER_TINT: Record<Provider, { bg: string; fg: string }> = {
-  TMONEY: { bg: '#FFCC00', fg: '#141414' },
-  FLOOZ: { bg: '#141B2D', fg: '#FFCC00' },
-  MOOV_MONEY: { bg: '#E8F0FB', fg: '#0055A5' },
+/** A line under each wallet's name, so people find it under the name they know. */
+const PROVIDER_NOTE: Partial<Record<Provider, string>> = {
+  TMONEY: 'Ex-TMoney',
+  FLOOZ: 'Moov Money',
 };
 
 export default function Fund() {
@@ -80,18 +82,15 @@ export default function Fund() {
 
           <Text style={type.heading}>Choisissez comment payer</Text>
           <View style={styles.providers}>
-            {(Object.keys(MOBILE_MONEY_PROVIDER_LABELS) as Provider[]).map((p) => (
+            {FUNDING_PROVIDERS.map((p) => (
               <OptionRow
                 key={p}
                 title={MOBILE_MONEY_PROVIDER_LABELS[p]}
+                note={PROVIDER_NOTE[p]}
                 dense
                 selected={provider === p}
                 onPress={() => setProvider(p)}
-                leading={
-                  <View style={[styles.logo, { backgroundColor: PROVIDER_TINT[p].bg }]}>
-                    <Text style={[styles.logoText, { color: PROVIDER_TINT[p].fg }]}>{MOBILE_MONEY_PROVIDER_LABELS[p].charAt(0)}</Text>
-                  </View>
-                }
+                leading={<ProviderLogo provider={p} />}
               />
             ))}
           </View>
@@ -123,7 +122,5 @@ const styles = StyleSheet.create({
   summary: { flexDirection: 'row', alignItems: 'center', gap: 14 },
   summaryAmount: { ...type.heading, fontSize: 19 },
   providers: { gap: 8 },
-  logo: { width: 36, height: 36, borderRadius: radius.sm, alignItems: 'center', justifyContent: 'center' },
-  logoText: { fontSize: 16, fontWeight: '900' },
   flag: { fontSize: 20 },
 });

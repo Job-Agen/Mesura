@@ -175,7 +175,7 @@ démonstration, ils sont indicatifs et rien n'est débité. Mesura ne vous deman
 <p>Quand une carte prend fin (clôturée, expirée ou après son dernier paiement autorisé), le montant rechargé qui n'a pas
 été dépensé vous est renvoyé sur Mobile Money, sans frais supplémentaires. Les frais de service payés à la recharge ne sont
 pas remboursés. Le remboursement est envoyé sur le numéro qui a rechargé la carte si son opérateur peut recevoir des
-virements (TMoney aujourd'hui) ; sinon, vous indiquez un numéro TMoney dans l'application.
+virements (Mixx by Yas, ex-TMoney, aujourd'hui) ; sinon, vous indiquez un numéro Mixx by Yas dans l'application.
 ${c.sandbox ? 'En version de démonstration, le remboursement est simulé : aucun argent n\'est envoyé.' : ''}</p>
 
 <h2>5. Utilisation interdite</h2>
