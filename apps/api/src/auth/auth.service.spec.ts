@@ -2,6 +2,7 @@ import { BadRequestException } from '@nestjs/common';
 import type { JwtService } from '@nestjs/jwt';
 import type { PrismaService } from '../prisma/prisma.service';
 import type { EmailMessage, EmailProvider } from '../providers/email-provider.interface';
+import type { DemoAccountService } from '../demo/demo-account.service';
 import type { UsersService } from '../users/users.service';
 import { AuthService } from './auth.service';
 import { hashPassword, verifyPassword } from './password';
@@ -51,7 +52,8 @@ function setup() {
   const signed: unknown[] = [];
   const jwt = { signAsync: async (payload: unknown) => (signed.push(payload), 'token') } as unknown as JwtService;
   const users = { getMe: async () => ({ id: user.id }) } as unknown as UsersService;
-  const service = new AuthService(prisma, jwt, users, email);
+  const demo = { prepareForSignIn: async () => undefined } as unknown as DemoAccountService;
+  const service = new AuthService(prisma, jwt, users, email, demo);
   const codeFromEmail = () => /(\d{6})/.exec(sent[sent.length - 1]?.text ?? '')?.[1] ?? '';
 
   return { service, user, sent, signed, codeFromEmail, resets: () => resets };

@@ -6,6 +6,7 @@ import { EMAIL_PROVIDER, type EmailProvider } from '../providers/email-provider.
 import { PrismaService } from '../prisma/prisma.service';
 import { UsersService } from '../users/users.service';
 import type { TokenPayload } from './auth.guard';
+import { DemoAccountService } from '../demo/demo-account.service';
 import { hashPassword, verifyPassword } from './password';
 
 @Injectable()
@@ -15,6 +16,7 @@ export class AuthService {
     private readonly jwt: JwtService,
     private readonly users: UsersService,
     @Inject(EMAIL_PROVIDER) private readonly email: EmailProvider,
+    private readonly demo: DemoAccountService,
   ) {}
 
   async register(input: RegisterInput): Promise<AuthResponseDto> {
@@ -34,6 +36,7 @@ export class AuthService {
   }
 
   async login(input: LoginInput): Promise<AuthResponseDto> {
+    await this.demo.prepareForSignIn(input.email, input.password);
     const user = await this.prisma.user.findUnique({ where: { email: input.email } });
     // Same message for unknown email and wrong password (no account enumeration).
     if (!user || !(await verifyPassword(input.password, user.passwordHash))) {
