@@ -76,11 +76,18 @@ export const RefundStatus = {
 } as const;
 export type RefundStatus = (typeof RefundStatus)[keyof typeof RefundStatus];
 
-/** Wallets refunds can be sent to. In Togo, FedaPay sends money to TMoney only. */
+/** Wallets refunds can be sent to. In Togo, FedaPay sends money to Mixx by Yas (formerly TMoney) only. */
 export const REFUND_PROVIDERS: readonly MobileMoneyProvider[] = ['TMONEY'];
 
+/**
+ * TMONEY is Togocel's wallet, renamed Mixx by Yas when Togocel became Yas. Flooz and Moov Money are the same
+ * Moov Africa wallet: MOOV_MONEY stays for older fundings, the app offers FUNDING_PROVIDERS only.
+ */
 export const MOBILE_MONEY_PROVIDER_LABELS: Record<MobileMoneyProvider, string> = {
-  TMONEY: 'TMoney',
+  TMONEY: 'Mixx by Yas',
   FLOOZ: 'Flooz',
   MOOV_MONEY: 'Moov Money',
 };
+
+/** Wallets offered when funding a card. */
+export const FUNDING_PROVIDERS: readonly MobileMoneyProvider[] = ['TMONEY', 'FLOOZ'];

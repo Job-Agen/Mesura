@@ -21,7 +21,7 @@ const STATUS_LABEL: Record<RefundDto['status'], string> = {
   PENDING: 'En cours',
   SENT: 'Envoyé',
   FAILED: 'Échec',
-  ACTION_REQUIRED: 'Numéro TMoney requis',
+  ACTION_REQUIRED: 'Numéro Mixx by Yas requis',
 };
 
 /** Refund of an ended card's unspent balance, and the form to send it elsewhere when it cannot go back. */
@@ -55,11 +55,11 @@ export function RefundSection({ card }: { card: CardDto }) {
         <View style={styles.form}>
           <InfoNote>
             {refund.status === 'FAILED'
-              ? "L'envoi a échoué. Vérifiez le numéro et réessayez, ou indiquez un autre numéro TMoney."
-              : `Les remboursements ne peuvent être envoyés que sur TMoney. Indiquez un numéro TMoney pour recevoir ${formatMoney(refund.amount, refund.currency)}.`}
+              ? "L'envoi a échoué. Vérifiez le numéro et réessayez, ou indiquez un autre numéro Mixx by Yas."
+              : `Les remboursements ne peuvent être envoyés que sur Mixx by Yas (ex-TMoney). Indiquez un numéro Mixx by Yas pour recevoir ${formatMoney(refund.amount, refund.currency)}.`}
           </InfoNote>
           <TextField
-            label="Numéro TMoney"
+            label="Numéro Mixx by Yas"
             value={phone}
             onChangeText={setPhone}
             keyboardType="phone-pad"
@@ -68,7 +68,7 @@ export function RefundSection({ card }: { card: CardDto }) {
           />
           <InlineError message={redirect.error ? errorMessage(redirect.error) : null} />
           <Button
-            label="Recevoir sur TMoney"
+            label="Recevoir sur Mixx by Yas"
             icon="arrow-down-circle-outline"
             disabled={!parsed.success}
             loading={redirect.isPending}

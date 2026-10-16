@@ -113,7 +113,7 @@ procedure are in [`docs/play-store/README.md`](docs/play-store/README.md).
 2. **KYC** — name, date of birth (18+), Togo number → verified instantly (sandbox)
 3. **Home → Create a card** → Where (Anywhere / merchant) → How much → How many → How long
 4. **Review** — maximum, merchant, payments, duration, illustrative fees (5 %)
-5. **Fund** — pick TMoney / Flooz / Moov Money → *Pay 15,750 FCFA*
+5. **Fund** — pick Mixx by Yas (formerly TMoney) / Flooz → *Pay 15,750 FCFA*
 6. **Confirm the payment** — auto-confirms after ~10 s, or tap *Simulate confirmation*
 7. **Card created** → **Card details** — masked card, rules, *Freeze*, *Manage rules*, *Terminate*
 8. **Simulate an online payment** — choose a merchant and amount → **Approved** or **Payment blocked**
@@ -146,5 +146,5 @@ pnpm --filter @mesura/api smoke        # end-to-end API scenario against a runni
 | `FREE_CARDS_PER_PERSON` | `0` | Cards per person funded without the fee. A person = verified identity + Mobile Money number, tracked by fingerprints that survive account deletion. |
 | `FINGERPRINT_SECRET` | *(derived from `JWT_SECRET`)* | Key of those fingerprints (≥ 32 chars). Set it before real users sign up and never change it. |
 | `FEDAPAY_SECRET_KEY` | *(empty)* | [FedaPay](https://docs.fedapay.com) key for real Mobile Money. Empty = simulated. `sk_sandbox_…` = FedaPay test mode (test number approved, a number ending in 99 declined). `sk_live_…` = real money, refused unless `FEDAPAY_ALLOW_LIVE=true`. |
-| `FEDAPAY_PAYOUTS_ENABLED` | `false` | Send refunds of unspent card balances (TMoney only) with FedaPay payouts, once FedaPay's support has enabled payouts on the account. `false` = refunds simulated. Required with a live key. |
+| `FEDAPAY_PAYOUTS_ENABLED` | `false` | Send refunds of unspent card balances (Mixx by Yas, formerly TMoney, only) with FedaPay payouts, once FedaPay's support has enabled payouts on the account. `false` = refunds simulated. Required with a live key. |
 | `FUNDING_EXPIRY_MINUTES` | `15` | A pending Mobile Money request expires after this. |
