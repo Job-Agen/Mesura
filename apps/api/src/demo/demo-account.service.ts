@@ -9,7 +9,8 @@ const MIN_USABLE_MS = 24 * 60 * 60_000;
 /**
  * Keeps the sandbox demo account usable for app store reviewers, who sign in with fixed credentials,
  * may delete the account to test deletion, and may come back weeks later: at a demo sign-in, the
- * account is recreated if it is gone, and its cards are rebuilt when none stays active for a day.
+ * account is recreated if it is gone, and its cards are rebuilt when none stays active for a day or a
+ * refund waits for a TMoney number (it would block the deletion a reviewer tests).
  * Sandbox only: with SANDBOX_MODE off, this does nothing.
  */
 @Injectable()
@@ -34,10 +35,13 @@ export class DemoAccountService {
       return;
     }
 
-    const usable = await this.prisma.card.count({
-      where: { userId: existing.id, status: 'ACTIVE', expiresAt: { gt: new Date(now + MIN_USABLE_MS) } },
-    });
-    if (usable === 0) {
+    const [usable, stuckRefunds] = await Promise.all([
+      this.prisma.card.count({
+        where: { userId: existing.id, status: 'ACTIVE', expiresAt: { gt: new Date(now + MIN_USABLE_MS) } },
+      }),
+      this.prisma.refund.count({ where: { card: { userId: existing.id }, status: { in: ['ACTION_REQUIRED', 'FAILED'] } } }),
+    ]);
+    if (usable === 0 || stuckRefunds > 0) {
       await this.prisma.$transaction((tx) => rebuildDemoCards(tx, existing.id, now));
       this.logger.log('Demo cards rebuilt');
     }

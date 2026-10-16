@@ -4,7 +4,7 @@ import { DEMO_EMAIL, DEMO_PASSWORD } from './demo-account';
 import { DemoAccountService } from './demo-account.service';
 
 /** Records what the service asks of the database; `usable` = demo cards still active for a day. */
-function setup({ sandbox = true, exists = true, usable = 0 } = {}) {
+function setup({ sandbox = true, exists = true, usable = 0, stuck = 0 } = {}) {
   const calls: string[] = [];
   const prisma = {
     user: {
@@ -16,6 +16,7 @@ function setup({ sandbox = true, exists = true, usable = 0 } = {}) {
       deleteMany: async () => void calls.push('card.deleteMany'),
       create: async () => void calls.push('card.create'),
     },
+    refund: { count: async () => stuck },
     merchant: { upsert: async () => undefined },
     $transaction: async (fn: (tx: unknown) => Promise<void>) => fn(prisma),
   };
@@ -43,10 +44,14 @@ describe('DemoAccountService', () => {
     expect(calls.filter((c) => c === 'card.create')).toHaveLength(4);
   });
 
-  it('rebuilds the cards when none stays active for a day, and leaves usable cards alone', async () => {
+  it('rebuilds the cards when none stays active for a day or a refund waits for a number, else leaves them alone', async () => {
     const stale = setup({ usable: 0 });
     await stale.service.prepareForSignIn(DEMO_EMAIL, DEMO_PASSWORD);
     expect(stale.calls).toEqual(['card.deleteMany', 'card.create', 'card.create', 'card.create', 'card.create']);
+
+    const stuck = setup({ usable: 1, stuck: 1 });
+    await stuck.service.prepareForSignIn(DEMO_EMAIL, DEMO_PASSWORD);
+    expect(stuck.calls[0]).toBe('card.deleteMany');
 
     const fresh = setup({ usable: 1 });
     await fresh.service.prepareForSignIn(DEMO_EMAIL, DEMO_PASSWORD);
