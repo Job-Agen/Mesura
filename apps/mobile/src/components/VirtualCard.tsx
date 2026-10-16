@@ -14,20 +14,23 @@ interface VirtualCardProps {
   style?: ViewStyle;
 }
 
-/** Masked card visual. Mesura never has — and therefore never shows — a real PAN or CVV. */
+/**
+ * Masked card visual. Mesura never has — and therefore never shows — a real PAN or CVV.
+ * No card network logo (Visa, Mastercard) until a licensed issuer issues the cards: only it may show one.
+ */
 export function VirtualCard({ label, last4, status, small, style }: VirtualCardProps) {
   const inactive = status && status !== 'ACTIVE' && status !== 'PENDING_FUNDING';
   return (
     <View
       style={[styles.card, small && styles.small, inactive && styles.inactive, style]}
       accessible
-      accessibilityLabel={`${label}, carte Visa se terminant par ${last4 ?? 'pas encore émise'}${status ? `, ${STATUS_LABEL[status]}` : ''}`}
+      accessibilityLabel={`${label}, carte virtuelle se terminant par ${last4 ?? 'pas encore émise'}${status ? `, ${STATUS_LABEL[status]}` : ''}`}
     >
       <View style={[styles.facet, styles.facetA]} />
       <View style={[styles.facet, styles.facetB]} />
       <View style={styles.top}>
         <Wordmark height={small ? 18 : 22} />
-        <Text style={[styles.network, small && { fontSize: 17 }]}>VISA</Text>
+        <Text style={[styles.network, small && { fontSize: 9 }]}>CARTE VIRTUELLE</Text>
       </View>
       <View style={styles.bottom}>
         {small ? null : (
@@ -71,7 +74,7 @@ const styles = StyleSheet.create({
   facetA: { width: 220, height: 220, right: -70, bottom: -120, opacity: 0.22, transform: [{ rotate: '35deg' }] },
   facetB: { width: 140, height: 140, right: 30, bottom: -70, opacity: 0.14, transform: [{ rotate: '20deg' }] },
   top: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  network: { color: colors.onDark, fontSize: 21, fontWeight: '900', fontStyle: 'italic' },
+  network: { color: colors.onDarkMuted, fontSize: 11, fontWeight: '800', letterSpacing: 1.5 },
   bottom: { gap: 6 },
   label: { color: colors.onDarkMuted, fontSize: 11, fontWeight: '700', letterSpacing: 2 },
   numberRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
