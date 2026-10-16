@@ -23,7 +23,7 @@ réponses aux questionnaires de la Play Console et procédure de signature.
 | Nous contacter | Profil (affiché dès que `SUPPORT_EMAIL` est renseigné) |
 | Visuels | `docs/play-store/assets/` |
 
-Version actuelle : **0.7.2** (versionCode **10**). Chaque nouvel envoi sur Play doit augmenter
+Version actuelle : **0.7.3** (versionCode **11**). Chaque nouvel envoi sur Play doit augmenter
 `android.versionCode` dans `apps/mobile/app.json`.
 
 ## 2. Avant le premier envoi
