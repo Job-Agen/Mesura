@@ -2,6 +2,7 @@ import 'reflect-metadata';
 import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
+import helmet from 'helmet';
 import { AppModule } from './app.module';
 import { loadEnv } from './config/env';
 
@@ -11,6 +12,8 @@ async function bootstrap(): Promise<void> {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, { logger: ['log', 'warn', 'error'] });
   // Rate limiting is per client IP; behind a proxy that IP comes from X-Forwarded-For.
   if (env.TRUST_PROXY) app.set('trust proxy', 1);
+  // Standard security headers (HSTS, no framing, no MIME sniffing, strict CSP for the legal pages).
+  app.use(helmet());
 
   const origins = env.CORS_ORIGINS.split(',').map((o) => o.trim()).filter(Boolean);
   app.enableCors({ origin: origins.length > 0 ? origins : true });

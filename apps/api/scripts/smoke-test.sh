@@ -116,7 +116,11 @@ curl -s -X DELETE "$A/me" -H "$H" -H "$JSON" -d '{"password":"password123"}' | j
 curl -s "$A/cards/$C3" -H "$H" | j "(d['status'], d['refund']['amount'], d['refund']['status'])"
 post "/cards/$C3/refund" '{"phone":"+228 90 12 34 56"}' | j "d['refund']['status']"
 curl -s -o /dev/null -w '%{http_code}\n' -X DELETE "$A/me" -H "$H" -H "$JSON" -d '{"password":"password123"}'
+echo "-- the deleted account's token is refused (expect 401)"
 curl -s "$A/me" -H "$H" | j "(d['statusCode'], d['message'])"
+
+echo "== security headers"
+curl -sI "$A/legal/privacy" | grep -ci "strict-transport-security\|x-frame-options\|x-content-type-options\|content-security-policy"
 
 echo "== legal pages"
 curl -s -o /dev/null -w 'privacy %{http_code}\n' "$A/legal/privacy"

@@ -98,6 +98,9 @@ describe('FedaPay configuration', () => {
   it('refuses a live key unless explicitly allowed, and without real refunds', () => {
     expect(() => loadEnv({ ...base, FEDAPAY_SECRET_KEY: 'sk_live_x' })).toThrow(/FEDAPAY_ALLOW_LIVE/);
     expect(() => loadEnv({ ...base, FEDAPAY_SECRET_KEY: 'sk_live_x', FEDAPAY_ALLOW_LIVE: 'true' })).toThrow(/FEDAPAY_PAYOUTS_ENABLED/);
+    expect(() =>
+      loadEnv({ ...base, FEDAPAY_SECRET_KEY: 'sk_live_x', FEDAPAY_ALLOW_LIVE: 'true', FEDAPAY_PAYOUTS_ENABLED: 'true', SANDBOX_MODE: 'true' }),
+    ).toThrow(/SANDBOX_MODE/);
     expect(
       loadEnv({ ...base, FEDAPAY_SECRET_KEY: 'sk_live_x', FEDAPAY_ALLOW_LIVE: 'true', FEDAPAY_PAYOUTS_ENABLED: 'true' }).FEDAPAY_SECRET_KEY,
     ).toBe('sk_live_x');
