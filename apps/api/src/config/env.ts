@@ -52,6 +52,10 @@ const checkedEnvSchema = envSchema
     path: ['FEDAPAY_SECRET_KEY'],
     message: 'a live FedaPay key moves real money: set FEDAPAY_ALLOW_LIVE=true to use it',
   })
+  .refine((env) => !env.FEDAPAY_SECRET_KEY.startsWith('sk_live_') || !env.SANDBOX_MODE, {
+    path: ['SANDBOX_MODE'],
+    message: 'sandbox tools (simulated payments, instant confirmation) must be off with a live FedaPay key: set SANDBOX_MODE=false',
+  })
   .refine((env) => !env.FEDAPAY_SECRET_KEY.startsWith('sk_live_') || env.FEDAPAY_PAYOUTS_ENABLED, {
     path: ['FEDAPAY_PAYOUTS_ENABLED'],
     message: 'with a live FedaPay key, refunds must be real: enable FedaPay payouts and set FEDAPAY_PAYOUTS_ENABLED=true',

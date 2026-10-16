@@ -83,6 +83,8 @@ model User {
   passwordHash       String
   /// When the user accepted the terms of use at sign-up (null for accounts created before they existed).
   termsAcceptedAt    DateTime?
+  /// Part of every session token; raised when the password changes, which signs out every device.
+  sessionVersion     Int                 @default(0)
   createdAt          DateTime            @default(now())
   updatedAt          DateTime            @updatedAt
   kycProfile         KycProfile?

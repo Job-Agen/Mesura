@@ -17,7 +17,7 @@ interface ResetRow {
 
 /** In-memory stand-in for the few Prisma calls the reset flow makes. */
 function setup() {
-  const user = { id: 'u1', email: 'ama@test.dev', name: 'Ama', passwordHash: '' };
+  const user = { id: 'u1', email: 'ama@test.dev', name: 'Ama', passwordHash: '', sessionVersion: 0 };
   let resets: ResetRow[] = [];
   const sent: EmailMessage[] = [];
 
@@ -25,7 +25,11 @@ function setup() {
     user: {
       findUnique: async ({ where }: { where: { email?: string; id?: string } }) =>
         where.email === user.email || where.id === user.id ? user : null,
-      update: async ({ data }: { data: { passwordHash: string } }) => Object.assign(user, data),
+      update: async ({ data }: { data: { passwordHash: string; sessionVersion?: { increment: number } } }) =>
+        Object.assign(user, {
+          passwordHash: data.passwordHash,
+          sessionVersion: user.sessionVersion + (data.sessionVersion?.increment ?? 0),
+        }),
     },
     passwordResetCode: {
       deleteMany: async () => {
@@ -44,12 +48,13 @@ function setup() {
   } as unknown as PrismaService;
 
   const email: EmailProvider = { delivers: true, send: async (m) => void sent.push(m) };
-  const jwt = { signAsync: async () => 'token' } as unknown as JwtService;
+  const signed: unknown[] = [];
+  const jwt = { signAsync: async (payload: unknown) => (signed.push(payload), 'token') } as unknown as JwtService;
   const users = { getMe: async () => ({ id: user.id }) } as unknown as UsersService;
   const service = new AuthService(prisma, jwt, users, email);
   const codeFromEmail = () => /(\d{6})/.exec(sent[sent.length - 1]?.text ?? '')?.[1] ?? '';
 
-  return { service, user, sent, codeFromEmail, resets: () => resets };
+  return { service, user, sent, signed, codeFromEmail, resets: () => resets };
 }
 
 describe('AuthService password reset', () => {
@@ -74,6 +79,14 @@ describe('AuthService password reset', () => {
     });
     expect(await verifyPassword('new-password', user.passwordHash)).toBe(true);
     expect(resets()).toHaveLength(0); // the code cannot be reused
+  });
+
+  it('signs out every device: the new token carries a raised session version', async () => {
+    const { service, user, signed, codeFromEmail } = setup();
+    await service.forgotPassword({ email: user.email });
+    await service.resetPassword({ email: user.email, code: codeFromEmail(), password: 'new-password' });
+    expect(user.sessionVersion).toBe(1);
+    expect(signed[signed.length - 1]).toEqual({ sub: user.id, sv: 1 });
   });
 
   it('rejects a wrong code and locks the code after 5 wrong attempts', async () => {

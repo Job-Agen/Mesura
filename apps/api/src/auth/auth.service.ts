@@ -5,6 +5,7 @@ import type { AuthResponseDto, ForgotPasswordInput, LoginInput, RegisterInput, R
 import { EMAIL_PROVIDER, type EmailProvider } from '../providers/email-provider.interface';
 import { PrismaService } from '../prisma/prisma.service';
 import { UsersService } from '../users/users.service';
+import type { TokenPayload } from './auth.guard';
 import { hashPassword, verifyPassword } from './password';
 
 @Injectable()
@@ -29,7 +30,7 @@ export class AuthService {
         kycProfile: { create: {} },
       },
     });
-    return this.issueToken(user.id);
+    return this.issueToken(user.id, user.sessionVersion);
   }
 
   async login(input: LoginInput): Promise<AuthResponseDto> {
@@ -38,7 +39,7 @@ export class AuthService {
     if (!user || !(await verifyPassword(input.password, user.passwordHash))) {
       throw new UnauthorizedException('E-mail ou mot de passe incorrect');
     }
-    return this.issueToken(user.id);
+    return this.issueToken(user.id, user.sessionVersion);
   }
 
   /**
@@ -60,7 +61,7 @@ export class AuthService {
     return { sent: true };
   }
 
-  /** Checks the e-mailed code, sets the new password and signs the user in. */
+  /** Checks the e-mailed code, sets the new password, signs out every other device and signs the user in. */
   async resetPassword(input: ResetPasswordInput): Promise<AuthResponseDto> {
     const invalid = new BadRequestException('Code invalide ou expiré. Demandez un nouveau code.');
     const user = await this.prisma.user.findUnique({ where: { email: input.email } });
@@ -76,15 +77,18 @@ export class AuthService {
       throw invalid;
     }
 
-    await this.prisma.$transaction([
-      this.prisma.user.update({ where: { id: user.id }, data: { passwordHash: await hashPassword(input.password) } }),
+    const [updated] = await this.prisma.$transaction([
+      this.prisma.user.update({
+        where: { id: user.id },
+        data: { passwordHash: await hashPassword(input.password), sessionVersion: { increment: 1 } },
+      }),
       this.prisma.passwordResetCode.deleteMany({ where: { userId: user.id } }),
     ]);
-    return this.issueToken(user.id);
+    return this.issueToken(user.id, updated.sessionVersion);
   }
 
-  private async issueToken(userId: string): Promise<AuthResponseDto> {
-    const accessToken = await this.jwt.signAsync({ sub: userId });
+  private async issueToken(userId: string, sessionVersion: number): Promise<AuthResponseDto> {
+    const accessToken = await this.jwt.signAsync({ sub: userId, sv: sessionVersion } satisfies TokenPayload);
     return { accessToken, user: await this.users.getMe(userId) };
   }
 }
