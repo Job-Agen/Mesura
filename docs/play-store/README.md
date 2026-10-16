@@ -102,6 +102,8 @@ Version actuelle : **0.7.0** (versionCode **8**). Chaque nouvel envoi sur Play d
 
 **Accès à l'application** — l'app exige une connexion. Fournissez le compte de démo :
 `demo@mesura.test` / `demo1234` (identité déjà vérifiée, 4 cartes dont « Carte Meta Ads » active).
+Ce compte se remet en état tout seul à chaque connexion : recréé s'il a été supprimé (l'examinateur peut tester
+la suppression), cartes neuves dès qu'aucune ne reste active pendant au moins 24 h.
 Notes pour l'examinateur, à coller telles quelles :
 > Application de démonstration : aucun argent réel n'est débité. Les recharges passent par le mode test
 > de FedaPay et sont approuvées automatiquement. Pour voir le numéro d'une carte : Cartes → Carte Meta Ads →
