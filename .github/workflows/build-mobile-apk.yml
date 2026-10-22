@@ -23,8 +23,8 @@ jobs:
       # Needed to republish the tester APK on the "testeurs" release (main only).
       contents: write
     env:
-      # Priority: manual input → repository variable PO_API_URL → Android emulator host.
-      EXPO_PUBLIC_API_URL: ${{ inputs.api_url || vars.PO_API_URL || 'http://10.0.2.2:3000' }}
+      # Priority: manual input → repository variable PO_API_URL → the hosted sandbox API (testers download this APK).
+      EXPO_PUBLIC_API_URL: ${{ inputs.api_url || vars.PO_API_URL || 'https://mesura-38r8.vercel.app' }}
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
