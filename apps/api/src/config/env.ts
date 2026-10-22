@@ -29,6 +29,11 @@ const envSchema = z.object({
   LEGAL_PUBLISHER: z.string().default(''),
   SUPPORT_EMAIL: z.string().default(''),
   /**
+   * Password of the private /admin pages (sign-ups and tester feedback), asked by the browser with the
+   * user name "admin". When empty, /admin answers 404.
+   */
+  ADMIN_PASSWORD: z.union([z.literal(''), z.string().min(16, 'ADMIN_PASSWORD must be at least 16 characters')]).default(''),
+  /**
    * FedaPay secret key (https://docs.fedapay.com). Empty: Mobile Money is simulated in-process.
    * sk_sandbox_… talks to FedaPay's test environment; a sk_live_… key moves real money and is
    * refused unless FEDAPAY_ALLOW_LIVE=true.
