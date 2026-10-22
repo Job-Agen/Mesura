@@ -6,11 +6,11 @@ export interface LegalContact {
   sandbox: boolean;
 }
 
-const UPDATED = '15 octobre 2026';
+const UPDATED = '22 octobre 2026';
 
-const escape = (s: string) => s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
+export const escape = (s: string) => s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 
-function page(title: string, body: string): string {
+export function page(title: string, body: string): string {
   return `<!doctype html>
 <html lang="fr">
 <head>
@@ -28,7 +28,17 @@ function page(title: string, body: string): string {
   .muted { color: var(--muted); font-size: 14px; }
   .note { background: var(--card); border-left: 4px solid var(--accent); padding: 12px 16px; border-radius: 8px; }
   a { color: var(--accent); }
-  ul { padding-left: 20px; }
+  ul, ol { padding-left: 20px; }
+  .btn { display: inline-block; background: var(--accent); color: var(--bg); text-decoration: none; font-weight: 600;
+    padding: 12px 20px; border-radius: 10px; border: 0; font-size: 16px; cursor: pointer; }
+  form { background: var(--card); padding: 16px; border-radius: 12px; }
+  label { display: block; font-weight: 600; margin: 14px 0 6px; }
+  label.check { font-weight: 400; margin: 6px 0; }
+  input[type=text], input[type=tel], textarea, select { box-sizing: border-box; width: 100%; padding: 10px 12px;
+    font: inherit; color: var(--fg); background: var(--bg); border: 1px solid var(--muted); border-radius: 8px; }
+  form .btn { margin-top: 18px; width: 100%; }
+  .error { color: #B3261E; font-weight: 600; }
+  .hp { position: absolute; left: -10000px; }
 </style>
 </head>
 <body><main>${body}</main></body>
@@ -67,6 +77,8 @@ ${sandboxNote(c)}
   <li><strong>Cartes</strong> : les règles que vous fixez (plafond, marchand, nombre de paiements, durée) et l'état de chaque carte.</li>
   <li><strong>Recharges et remboursements</strong> : opérateur Mobile Money choisi, numéros de téléphone utilisés et montants.</li>
   <li><strong>Paiements</strong> : marchand, montant, date, résultat (accepté ou bloqué) et motif d'un éventuel blocage.</li>
+  <li><strong>Liste d'attente et avis de testeurs</strong> (formulaires de notre site, sans compte) : prénom, numéro WhatsApp,
+  services payés en ligne, adresse Gmail (testeurs, pour l'invitation Google Play) et le texte de votre avis.</li>
 </ul>
 <p>Mesura ne demande jamais votre code PIN Mobile Money : vous le saisissez uniquement sur votre téléphone, chez votre opérateur.
 Le numéro complet, la date d'expiration et le CVV de vos cartes ne sont jamais enregistrés par Mesura : ils sont affichés à
@@ -98,7 +110,9 @@ L'application n'utilise ni publicité, ni outil de suivi publicitaire, ni servic
 de connexion est conservé dans le stockage sécurisé du système.</p>
 
 <h2>Combien de temps ?</h2>
-<p>Tant que votre compte existe. Lorsque vous supprimez votre compte, toutes les données listées ci-dessus sont effacées
+<p>Les inscriptions à la liste d'attente et les avis de testeurs sont conservés jusqu'au lancement public de Mesura, puis
+effacés ; vous pouvez demander leur suppression à tout moment.</p>
+<p>Pour le compte : tant que votre compte existe. Lorsque vous supprimez votre compte, toutes les données listées ci-dessus sont effacées
 immédiatement et définitivement de notre base.</p>
 <p>Une seule exception, pour éviter qu'un compte soit supprimé puis recréé pour contourner les limites (une identité par
 compte, cartes gratuites) : nous conservons une <strong>empreinte chiffrée irréversible</strong> de votre identité vérifiée
