@@ -63,9 +63,16 @@ export class CommunityController {
     return thanksPage('waitlist');
   }
 
-  /** One entry per number: signing up again updates it, and never turns a tester back into a plain sign-up. */
+  /**
+   * One entry per number: signing up again updates it, but never clears services already given
+   * nor turns a tester back into a plain sign-up.
+   */
   private async saveSignup(data: SignupInput): Promise<void> {
-    const update = { name: data.name, services: data.services, ...(data.tester ? { tester: true, gmail: data.gmail } : {}) };
+    const update = {
+      name: data.name,
+      ...(data.services.length > 0 ? { services: data.services } : {}),
+      ...(data.tester ? { tester: true, gmail: data.gmail } : {}),
+    };
     await this.prisma.waitlistEntry.upsert({ where: { phone: data.phone }, create: data, update });
   }
 }
