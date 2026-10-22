@@ -258,3 +258,31 @@ model Transaction {
 
   @@index([cardId, createdAt])
 }
+
+/// Sign-up from the public pages, before the public launch: the waitlist (/liste-attente) or the
+/// tester page (/testeurs), which also asks for the Gmail address Google Play needs to invite a tester.
+model WaitlistEntry {
+  id        String   @id @default(cuid())
+  name      String
+  /// WhatsApp number, normalized to +228XXXXXXXX; one entry per number.
+  phone     String   @unique
+  /// Services the person pays online today (labels from the page's checkboxes).
+  services  String[]
+  /// Set when the person signed up as a tester.
+  gmail     String?
+  tester    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+/// Feedback sent from the public tester page (/testeurs).
+model TesterFeedback {
+  id        String   @id @default(cuid())
+  name      String?
+  /// Optional WhatsApp number or e-mail to answer the tester.
+  contact   String?
+  /// 1 to 5.
+  rating    Int?
+  message   String
+  createdAt DateTime @default(now())
+}
