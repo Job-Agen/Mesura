@@ -42,7 +42,8 @@ export function testersPage(s: FormState = {}, feedback: FormState = {}): string
   return page(
     'Devenir testeur',
     `<h1>Devenez testeur de Mesura</h1>
-<p class="muted">Des cartes virtuelles que vous contrôlez : un plafond, un marchand, une durée. Rechargées par Mobile Money.</p>
+<p class="muted">Des cartes virtuelles éphémères : un plafond, un marchand, une durée, puis la carte s'éteint toute seule.
+Rechargées par Mobile Money.</p>
 ${demoNote}
 
 <h2>1. Inscrivez-vous</h2>
@@ -74,11 +75,15 @@ ${honeypot}
 <h2>3. Ce que nous aimerions que vous testiez</h2>
 <ol>
   <li>Créer un compte et vérifier votre identité (simulée : rien n'est transmis).</li>
-  <li>Créer une carte pour un service précis, par exemple Netflix, avec un plafond et une durée.</li>
+  <li>Créer une carte pour un achat précis, par exemple un mois de Netflix, avec un plafond et une durée.</li>
   <li>La recharger avec Mixx by Yas ou Flooz (mode test, approuvé automatiquement, rien n'est débité).</li>
   <li>Afficher le numéro de la carte, puis regarder l'historique des paiements acceptés ou bloqués.</li>
-  <li>Fermer la carte et demander le remboursement du solde restant.</li>
+  <li>Créer une carte de <strong>30 minutes</strong> et vérifier qu'elle s'éteint toute seule à la fin (paiements refusés,
+  solde remboursable).</li>
+  <li>Fermer une carte avant la fin et demander le remboursement du solde restant.</li>
 </ol>
+<p class="muted">Chaque carte Mesura est éphémère : elle s'éteint après la durée choisie (30 minutes à 30 jours) ou après
+son dernier paiement autorisé. Pour un abonnement, on crée une nouvelle carte chaque mois.</p>
 <p>Dites-nous ce qui est clair, ce qui bloque, et ce qui vous ferait payer pour ce service.</p>
 
 <h2 id="avis">4. Donnez votre avis</h2>
@@ -108,13 +113,14 @@ export function waitlistPage(s: FormState = {}): string {
   return page(
     "Liste d'attente",
     `<h1>Payez en ligne sans exposer votre argent</h1>
-<p>Mesura crée des <strong>cartes virtuelles à usage contrôlé</strong> : une carte pour Netflix, une autre pour vos
-publicités Facebook, chacune avec son plafond et sa durée. Vous la rechargez avec Mixx by Yas ou Flooz, juste du montant
-nécessaire. Si un marchand tente de prélever plus que prévu, ou si la carte est utilisée chez un autre marchand, le paiement est bloqué.</p>
+<p>Mesura crée des <strong>cartes virtuelles éphémères</strong> : une carte pour un achat, un mois de Netflix ou une
+campagne de publicité Facebook, avec son plafond et sa durée. Vous la rechargez avec Mixx by Yas ou Flooz, juste du montant
+nécessaire, et elle s'éteint toute seule à la fin. Si un marchand tente de prélever plus que prévu, ou si la carte est utilisée chez un autre marchand, le paiement est bloqué.</p>
 <ul>
   <li>Pas de compte bancaire nécessaire.</li>
   <li>Le solde non dépensé vous est remboursé sur Mobile Money.</li>
-  <li>Une carte par usage : un abonnement oublié ne peut plus vous prélever.</li>
+  <li>Une carte par usage, qui disparaît après : personne ne peut la réutiliser, et un abonnement oublié ne peut
+  plus vous prélever. Pour un abonnement, vous créez simplement une nouvelle carte chaque mois.</li>
 </ul>
 <p class="note">Mesura est en préparation au Togo et n'émet pas encore de vraies cartes. Inscrivez-vous : nous vous
 écrirons sur WhatsApp au lancement. Aucun paiement n'est demandé.</p>
