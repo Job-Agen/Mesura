@@ -23,7 +23,7 @@ réponses aux questionnaires de la Play Console et procédure de signature.
 | Nous contacter | Profil (affiché dès que `SUPPORT_EMAIL` est renseigné) |
 | Visuels | `docs/play-store/assets/` |
 
-Version actuelle : **0.7.3** (versionCode **11**). Chaque nouvel envoi sur Play doit augmenter
+Version actuelle : **0.7.4** (versionCode **12**). Chaque nouvel envoi sur Play doit augmenter
 `android.versionCode` dans `apps/mobile/app.json`.
 
 ## 2. Avant le premier envoi
@@ -62,17 +62,21 @@ Version actuelle : **0.7.3** (versionCode **11**). Chaque nouvel envoi sur Play 
 > Mesura – Cartes contrôlées
 
 **Description courte** (80 caractères max.)
-> Des cartes virtuelles avec vos règles : plafond, marchand, paiements et durée.
+> Cartes virtuelles éphémères : plafond, marchand, durée, puis elles s'éteignent.
 
 **Description complète**
 > Payez en ligne sans exposer plus d'argent que nécessaire.
 >
-> Avec Mesura, chaque carte virtuelle suit les règles que vous choisissez :
+> Avec Mesura, chaque carte virtuelle est éphémère : elle sert à un achat ou à une période, puis elle s'éteint
+> toute seule. Elle suit les règles que vous choisissez :
 >
 > • COMBIEN — fixez le montant maximum que la carte peut dépenser.
 > • OÙ — réservez-la à un seul marchand (Canva, Netflix, Amazon…) ou utilisez-la partout.
 > • COMBIEN DE FOIS — un paiement, cinq, ou jusqu'à l'expiration.
-> • COMBIEN DE TEMPS — 30 minutes, 24 heures, 7 jours… elle se désactive toute seule.
+> • COMBIEN DE TEMPS — 30 minutes, 24 heures, 7 jours, 30 jours au plus… elle s'éteint toute seule.
+>
+> Pour un abonnement (Netflix, Spotify, Canva…), créez une carte de 30 jours et renouvelez-la chaque mois :
+> un abonnement oublié ne peut plus vous prélever.
 >
 > Rechargez votre carte par Mobile Money (Mixx by Yas, ex-TMoney, ou Flooz). Si un paiement ne respecte pas vos
 > règles, il est bloqué avant d'atteindre le marchand, et vous voyez pourquoi en clair.

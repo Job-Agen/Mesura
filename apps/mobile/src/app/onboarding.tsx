@@ -29,7 +29,7 @@ export default function Onboarding() {
       <View style={styles.intro}>
         <Text style={[type.display, styles.center]}>Votre argent.{'\n'}Vos règles.</Text>
         <Text style={[type.body, styles.center, { color: colors.muted }]}>
-          Créez des cartes virtuelles sécurisées pour vos paiements en ligne.
+          Créez des cartes virtuelles éphémères pour vos paiements en ligne : elles s'éteignent toutes seules.
         </Text>
       </View>
 

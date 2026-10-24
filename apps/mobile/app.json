@@ -3,7 +3,7 @@
     "name": "Mesura",
     "slug": "mesura-sandbox",
     "scheme": "mesura",
-    "version": "0.7.3",
+    "version": "0.7.4",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -22,7 +22,7 @@
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "versionCode": 11
+      "versionCode": 12
     },
     "web": {
       "bundler": "metro",

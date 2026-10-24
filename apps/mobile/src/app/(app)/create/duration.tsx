@@ -54,6 +54,10 @@ export default function Duration() {
       }
     >
       <StepHeader step={4} question="Combien de temps doit-elle rester active ?" />
+      <InfoNote tone="plain" icon="time-outline">
+        À la fin de cette durée, la carte s'éteint toute seule. Pour un abonnement, choisissez 30 jours et créez une
+        nouvelle carte chaque mois.
+      </InfoNote>
       <View style={styles.options}>
         {DURATION_PRESETS.map((p) => (
           <OptionRow
