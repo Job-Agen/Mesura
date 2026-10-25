@@ -1,5 +1,6 @@
 import { isSpam, normalizeTogoPhone, parseFeedback, parseSignup } from './community.forms';
 import { testersPage } from './community.pages';
+import { landingPage } from './landing.page';
 
 describe('community forms', () => {
   it('normalizes the usual ways of typing a Togo number', () => {
@@ -48,5 +49,17 @@ describe('community forms', () => {
     const html = testersPage({ error: 'x', values: { name: '"><script>alert(1)</script>' } });
     expect(html).not.toContain('<script>alert');
     expect(html).toContain('&#34;&#62;&#60;script&#62;');
+  });
+});
+
+describe('landing page', () => {
+  it('links to the tester and waitlist pages, says it is a demo and escapes the contact', () => {
+    const html = landingPage({ email: 'a@b.c"><x', publisher: 'Mesura Labs' });
+    expect(html).toContain('href="/testeurs"');
+    expect(html).toContain('href="/liste-attente"');
+    expect(html).toContain('version de démonstration');
+    expect(html).toContain('Mesura Labs');
+    expect(html).not.toContain('"><x');
+    expect(html).not.toMatch(/<script/i);
   });
 });

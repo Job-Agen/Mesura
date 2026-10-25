@@ -1,20 +1,33 @@
-import { Body, Controller, Get, Header, Post } from '@nestjs/common';
+import { Body, Controller, Get, Header, Inject, Post } from '@nestjs/common';
 import { SkipThrottle, Throttle } from '@nestjs/throttler';
 import { Public } from '../common/auth-user';
+import { APP_ENV, type AppEnv } from '../config/env';
 import { PrismaService } from '../prisma/prisma.service';
 import { isSpam, parseFeedback, parseSignup, type SignupInput } from './community.forms';
 import { testersPage, thanksPage, waitlistPage } from './community.pages';
+import { landingPage } from './landing.page';
 
 type FormBody = Record<string, unknown> | undefined;
 
 /**
- * Public pages to find the first users before the store listing: tester sign-up and guide
- * (/testeurs) and the launch waitlist (/liste-attente). Plain HTML forms, no account.
+ * Public pages to find the first users before the store listing: the landing page (/), tester
+ * sign-up and guide (/testeurs) and the launch waitlist (/liste-attente). Plain HTML forms, no account.
  */
 @Public()
 @Controller()
 export class CommunityController {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    @Inject(APP_ENV) private readonly env: AppEnv,
+    private readonly prisma: PrismaService,
+  ) {}
+
+  @Get()
+  @SkipThrottle()
+  @Header('Content-Type', 'text/html; charset=utf-8')
+  @Header('Cache-Control', 'public, max-age=300')
+  landing(): string {
+    return landingPage({ email: this.env.SUPPORT_EMAIL, publisher: this.env.LEGAL_PUBLISHER });
+  }
 
   @Get('testeurs')
   @SkipThrottle()
