@@ -129,6 +129,7 @@ curl -s -o /dev/null -w 'terms %{http_code}\n' "$A/legal/terms"
 curl -s "$A/legal/contact" | j "d"
 
 echo "== public sign-up pages; admin page closed without credentials (expect 401, or 404 when ADMIN_PASSWORD is unset)"
+curl -s -o /dev/null -w 'landing %{http_code}\n' "$A/"
 curl -s -o /dev/null -w 'testeurs %{http_code}\n' "$A/testeurs"
 curl -s -o /dev/null -w 'liste-attente %{http_code}\n' "$A/liste-attente"
 curl -s -o /dev/null -w 'admin %{http_code}\n' "$A/admin/inscriptions"
