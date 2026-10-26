@@ -100,7 +100,7 @@ Version actuelle : **0.7.4** (versionCode **12**). Chaque nouvel envoi sur Play 
 |---|---|
 | `icon-512.png` | Icône de l'application (512 × 512) |
 | `feature-graphic.png` | Image de présentation (1024 × 500) |
-| `01-bienvenue.png` … `08-infos-carte.png` | Captures téléphone (1080 × 2160), 2 à 8 requises : envoyez les 8, dans l'ordre |
+| `01-bienvenue.png` … `08-infos-carte.png` | Captures téléphone (1080 × 2160) de la version 0.7.4, 2 à 8 requises : envoyez les 8, dans l'ordre (la 4ᵉ montre l'étape « Durée » : la carte s'éteint toute seule) |
 
 ## 4. Questionnaires de la Play Console
 
