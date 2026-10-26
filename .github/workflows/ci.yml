@@ -8,18 +8,9 @@ on:
 
 jobs:
   check:
-    runs-on: ubuntu-latest
-    services:
-      postgres:
-        # Official image via the AWS mirror: Docker Hub rate-limits shared runners.
-        image: public.ecr.aws/docker/library/postgres:16
-        env:
-          POSTGRES_USER: mesura
-          POSTGRES_PASSWORD: mesura
-          POSTGRES_DB: mesura
-        ports: ['5432:5432']
-        options: >-
-          --health-cmd "pg_isready -U mesura" --health-interval 5s --health-timeout 5s --health-retries 10
+    # PostgreSQL 16 comes preinstalled on this image; starting it avoids pulling a Docker image,
+    # whose registry mirrors often refuse shared runners ("Data limit exceeded").
+    runs-on: ubuntu-24.04
     env:
       DATABASE_URL: postgresql://mesura:mesura@localhost:5432/mesura?schema=public
       DIRECT_URL: postgresql://mesura:mesura@localhost:5432/mesura?schema=public
@@ -27,6 +18,12 @@ jobs:
       SANDBOX_MODE: 'true'
       SANDBOX_FUNDING_AUTO_CONFIRM_SECONDS: '10'
     steps:
+      - name: Start PostgreSQL
+        run: |
+          sudo systemctl start postgresql.service
+          timeout 30 bash -c 'until pg_isready -h localhost; do sleep 1; done'
+          sudo -u postgres psql -v ON_ERROR_STOP=1 -c "CREATE USER mesura WITH PASSWORD 'mesura' CREATEDB;" \
+            -c "CREATE DATABASE mesura OWNER mesura;"
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
