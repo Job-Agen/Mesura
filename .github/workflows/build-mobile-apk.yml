@@ -11,9 +11,13 @@ on:
   workflow_dispatch:
     inputs:
       api_url:
-        description: 'Default API URL baked into the app (can be changed in-app on the login screen)'
+        description: 'API URL baked into the app'
         required: false
         default: ''
+      server_picker:
+        description: 'Show the API server picker on the login screen (developer builds only, never for testers)'
+        type: boolean
+        default: false
 
 jobs:
   apk:
@@ -25,6 +29,8 @@ jobs:
     env:
       # Priority: manual input → repository variable PO_API_URL → the hosted sandbox API (testers download this APK).
       EXPO_PUBLIC_API_URL: ${{ inputs.api_url || vars.PO_API_URL || 'https://mesura-38r8.vercel.app' }}
+      # Testers never see the server picker; a developer can turn it on for a manual build.
+      EXPO_PUBLIC_SERVER_PICKER: ${{ inputs.server_picker && 'true' || 'false' }}
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4

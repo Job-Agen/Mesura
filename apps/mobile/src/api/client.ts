@@ -3,6 +3,12 @@ import type { ApiErrorDto } from '@mesura/shared';
 /** Play Store build: fixed https API, no server picker (see app.config.js). */
 export const IS_PRODUCTION_BUILD = process.env.EXPO_PUBLIC_APP_VARIANT === 'production';
 
+/**
+ * Server picker on the login screen: in development, or in a sandbox build made with
+ * EXPO_PUBLIC_SERVER_PICKER=true. The tester APK hides it and always uses its built-in API.
+ */
+export const SHOW_SERVER_PICKER = !IS_PRODUCTION_BUILD && (__DEV__ || process.env.EXPO_PUBLIC_SERVER_PICKER === 'true');
+
 export const DEFAULT_API_URL = normalizeUrl(process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3000');
 let API_URL = DEFAULT_API_URL;
 
@@ -10,9 +16,12 @@ function normalizeUrl(url: string): string {
   return url.trim().replace(/\/+$/, '');
 }
 
-/** Sandbox only: lets an installed APK target any reachable API without rebuilding. */
+/**
+ * Sandbox only: lets an installed APK target any reachable API without rebuilding. Without the
+ * server picker, a URL saved by an older build is ignored and the built-in API is used.
+ */
 export function setApiBaseUrl(url: string | null): void {
-  API_URL = url && !IS_PRODUCTION_BUILD ? normalizeUrl(url) : DEFAULT_API_URL;
+  API_URL = url && SHOW_SERVER_PICKER ? normalizeUrl(url) : DEFAULT_API_URL;
 }
 
 export function getApiBaseUrl(): string {

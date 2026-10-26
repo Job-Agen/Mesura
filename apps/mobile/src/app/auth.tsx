@@ -4,7 +4,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 import { loginSchema, registerSchema } from '@mesura/shared';
-import { errorMessage, getApiBaseUrl, IS_PRODUCTION_BUILD } from '@/api/client';
+import { errorMessage, getApiBaseUrl, SHOW_SERVER_PICKER } from '@/api/client';
 import { api } from '@/api/endpoints';
 import { useAuth } from '@/auth/AuthProvider';
 import { ApiServerSetting } from '@/components/ApiServerSetting';
@@ -144,7 +144,7 @@ export default function Auth() {
       <Text style={[type.caption, { textAlign: 'center' }]}>
         Mesura sandbox · aucun argent réel, aucune vraie carte, aucune vérification d'identité réelle.
       </Text>
-      {IS_PRODUCTION_BUILD ? null : <ApiServerSetting />}
+      {SHOW_SERVER_PICKER ? <ApiServerSetting /> : null}
     </Screen>
   );
 }
