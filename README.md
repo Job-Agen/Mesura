@@ -78,11 +78,11 @@ pnpm mobile:dev       # then press a (Android), i (iOS), w (web) or scan the QR 
 
 The APK is a standalone release build (JS bundled, signed with the debug key — for testing only).
 
-**On the phone:** install the APK, open it, and on the *Log in / Sign up* screen tap
-**API server (sandbox) → Change**, enter the address of a reachable Mesura API — for example your
-computer on the same Wi-Fi, `http://192.168.1.20:3000` (start it with `pnpm api:dev`) — then
-**Save & test**. The choice is remembered. The build default is `http://10.0.2.2:3000`
-(the host machine, seen from the Android emulator).
+**On the phone:** install the APK and open it. The build on `main` (the tester APK, see `/testeurs`)
+uses the hosted sandbox API and shows no server picker. To point a build at another API — for example
+your computer on the same Wi-Fi, `http://192.168.1.20:3000` (start it with `pnpm api:dev`) — run the
+workflow by hand with `server_picker` ticked, or build with `EXPO_PUBLIC_SERVER_PICKER=true`: the
+*Log in / Sign up* screen then shows **Serveur API (sandbox) → Modifier** (always shown in development).
 
 **Build it yourself** (needs JDK 17+ and the Android SDK with NDK 27.1):
 
@@ -95,8 +95,8 @@ cd android && EXPO_PUBLIC_API_URL=http://10.0.2.2:3000 ./gradlew assembleRelease
 ```
 
 **Or on GitHub:** the *Build Mesura Android APK* workflow builds it on every push touching the
-mobile app and uploads it as the `mesura-sandbox-apk` artifact (set the repository variable
-`PO_API_URL` to change the default server).
+mobile app and uploads it as the `mesura-sandbox-apk` artifact; on `main` it also republishes it on the `testeurs`
+release (set the repository variable `PO_API_URL` to change the built-in server).
 
 Plain `http://` is allowed in this sandbox build (`plugins/with-sandbox-cleartext.js`) so a LAN
 API works; a production build must use an `https://` API and drop that plugin.
