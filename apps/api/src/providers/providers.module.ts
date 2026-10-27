@@ -6,6 +6,7 @@ import { FedaPayPaymentProvider } from './fedapay/fedapay-payment.provider';
 import { FedaPayPayoutProvider } from './fedapay/fedapay-payout.provider';
 import { LogEmailProvider } from './email/log-email.provider';
 import { ResendEmailProvider } from './email/resend-email.provider';
+import { SmtpEmailProvider } from './email/smtp-email.provider';
 import { KYC_PROVIDER } from './kyc-provider.interface';
 import { PAYMENT_PROVIDER } from './payment-provider.interface';
 import { PAYOUT_PROVIDER } from './payout-provider.interface';
@@ -43,8 +44,16 @@ import { SandboxPayoutProvider } from './sandbox/sandbox-payout.provider';
     {
       provide: EMAIL_PROVIDER,
       inject: [APP_ENV],
-      useFactory: (env: AppEnv) =>
-        env.RESEND_API_KEY ? new ResendEmailProvider(env.RESEND_API_KEY, env.EMAIL_FROM) : new LogEmailProvider(),
+      useFactory: (env: AppEnv) => {
+        if (env.RESEND_API_KEY) return new ResendEmailProvider(env.RESEND_API_KEY, env.EMAIL_FROM || 'Mesura <onboarding@resend.dev>');
+        if (env.SMTP_HOST && env.SMTP_USER && env.SMTP_PASS) {
+          return new SmtpEmailProvider(
+            { host: env.SMTP_HOST, port: env.SMTP_PORT, user: env.SMTP_USER, pass: env.SMTP_PASS },
+            env.EMAIL_FROM || `Mesura <${env.SMTP_USER}>`,
+          );
+        }
+        return new LogEmailProvider();
+      },
     },
   ],
   exports: [PAYMENT_PROVIDER, PAYOUT_PROVIDER, CARD_ISSUER_PROVIDER, KYC_PROVIDER, EMAIL_PROVIDER, SandboxMobileMoneyProvider],

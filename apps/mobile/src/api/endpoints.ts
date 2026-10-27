@@ -19,6 +19,8 @@ import type {
   DeleteAccountInput,
   ForgotPasswordInput,
   ResetPasswordInput,
+  EmailCodeSentDto,
+  VerifyEmailInput,
 } from '@mesura/shared';
 import { request } from './client';
 
@@ -32,6 +34,8 @@ export const api = {
   contact: () => request<{ email: string | null; publisher: string | null }>('GET', '/legal/contact'),
   me: () => request<UserDto>('GET', '/me'),
   deleteAccount: (input: DeleteAccountInput) => request<null>('DELETE', '/me', input),
+  sendEmailCode: () => request<EmailCodeSentDto>('POST', '/me/email/send-code'),
+  verifyEmail: (input: VerifyEmailInput) => request<UserDto>('POST', '/me/email/verify', input),
 
   kyc: () => request<KycProfileDto>('GET', '/kyc'),
   startKyc: (input: KycStartInput) => request<KycProfileDto>('POST', '/kyc/start', input),

@@ -42,16 +42,22 @@ export const forgotPasswordSchema = z.object({
 });
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
 
+const emailCodeSchema = z
+  .string()
+  .trim()
+  .regex(/^\d{6}$/, 'Le code contient 6 chiffres');
+
 /** "Forgot password", step 2: the code from the e-mail and the new password. */
 export const resetPasswordSchema = z.object({
   email: z.string().trim().toLowerCase().email('Saisissez une adresse e-mail valide'),
-  code: z
-    .string()
-    .trim()
-    .regex(/^\d{6}$/, 'Le code contient 6 chiffres'),
+  code: emailCodeSchema,
   password: newPasswordSchema,
 });
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
+
+/** Confirms the address of a new account with the 6-digit code sent to it. */
+export const verifyEmailSchema = z.object({ code: emailCodeSchema });
+export type VerifyEmailInput = z.infer<typeof verifyEmailSchema>;
 
 /** Account deletion is confirmed with the current password. */
 export const deleteAccountSchema = z.object({

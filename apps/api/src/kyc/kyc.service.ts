@@ -1,4 +1,4 @@
-import { ConflictException, Inject, Injectable } from '@nestjs/common';
+import { ConflictException, ForbiddenException, Inject, Injectable } from '@nestjs/common';
 import type { KycProfile } from '@prisma/client';
 import type { KycProfileDto, KycStartInput } from '@mesura/shared';
 import { FingerprintService } from '../abuse/fingerprint.service';
@@ -21,6 +21,8 @@ export class KycService {
 
   /** Step 1: the user submits identity details. Status → PENDING. */
   async start(userId: string, input: KycStartInput): Promise<KycProfileDto> {
+    const user = await this.prisma.user.findUnique({ where: { id: userId }, select: { emailVerifiedAt: true } });
+    if (!user?.emailVerifiedAt) throw new ForbiddenException('Confirmez d’abord votre adresse e-mail avec le code reçu');
     const current = await this.prisma.kycProfile.findUnique({ where: { userId } });
     if (current?.status === 'VERIFIED') throw new ConflictException('Votre identité est déjà vérifiée');
 

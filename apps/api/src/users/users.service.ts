@@ -22,6 +22,7 @@ export class UsersService {
       email: user.email,
       name: user.name,
       phone: user.phone,
+      emailVerified: user.emailVerifiedAt !== null,
       kycStatus: (user.kycProfile?.status ?? 'NOT_STARTED') satisfies KycStatus,
       createdAt: user.createdAt.toISOString(),
     };

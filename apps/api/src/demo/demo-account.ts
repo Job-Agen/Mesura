@@ -158,6 +158,7 @@ export async function createDemoUser(prisma: PrismaClient, now = Date.now()): Pr
       phone: '+22890123456',
       passwordHash: await hashPassword(DEMO_PASSWORD),
       termsAcceptedAt: new Date(now - 30 * DAY),
+      emailVerifiedAt: new Date(now - 30 * DAY),
       kycProfile: {
         create: {
           status: 'VERIFIED',

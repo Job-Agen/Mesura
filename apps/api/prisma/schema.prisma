@@ -76,21 +76,24 @@ enum Currency {
 }
 
 model User {
-  id                 String              @id @default(cuid())
-  email              String              @unique
+  id                 String                  @id @default(cuid())
+  email              String                  @unique
   name               String
   phone              String?
   passwordHash       String
   /// When the user accepted the terms of use at sign-up (null for accounts created before they existed).
   termsAcceptedAt    DateTime?
+  /// Set once the address is confirmed with the 6-digit code sent at sign-up.
+  emailVerifiedAt    DateTime?
   /// Part of every session token; raised when the password changes, which signs out every device.
-  sessionVersion     Int                 @default(0)
-  createdAt          DateTime            @default(now())
-  updatedAt          DateTime            @updatedAt
+  sessionVersion     Int                     @default(0)
+  createdAt          DateTime                @default(now())
+  updatedAt          DateTime                @updatedAt
   kycProfile         KycProfile?
   cards              Card[]
   fundings           Funding[]
   passwordResetCodes PasswordResetCode[]
+  emailCodes         EmailVerificationCode[]
   fingerprints       Fingerprint[]
 }
 
@@ -118,6 +121,19 @@ model Fingerprint {
 
 /// One-time code e-mailed for "forgot password". Only a hash of the code is stored.
 model PasswordResetCode {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  codeHash  String
+  expiresAt DateTime
+  attempts  Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+/// Code e-mailed to confirm a new account's address (hashed, like password reset codes).
+model EmailVerificationCode {
   id        String   @id @default(cuid())
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)

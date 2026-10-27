@@ -17,8 +17,17 @@ export interface UserDto {
   email: string;
   name: string;
   phone: string | null;
+  /** False until the 6-digit code sent to the address at sign-up is entered. */
+  emailVerified: boolean;
   kycStatus: KycStatus;
   createdAt: string;
+}
+
+export interface EmailCodeSentDto {
+  /** False when no e-mail service is configured on the server (the code was not delivered). */
+  delivered: boolean;
+  /** Sandbox only, and only when no e-mail service is configured: the code itself, so testing is not blocked. */
+  sandboxCode?: string;
 }
 
 export interface AuthResponseDto {

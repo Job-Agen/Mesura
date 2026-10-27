@@ -36,8 +36,8 @@ export default function RootLayout() {
 }
 
 /**
- * Access flow: signed out → onboarding/auth; signed in without verified KYC →
- * KYC; verified → the app. Stack.Protected redirects automatically when a
+ * Access flow: signed out → onboarding/auth; signed in with an unconfirmed e-mail →
+ * e-mail code; then without verified KYC → KYC; verified → the app. Stack.Protected redirects automatically when a
  * guard changes (sign in, KYC verified, sign out).
  */
 function RootNavigator() {
@@ -63,7 +63,8 @@ function RootNavigator() {
     );
   }
 
-  const verified = me.data?.kycStatus === 'VERIFIED';
+  const emailVerified = me.data?.emailVerified === true;
+  const verified = emailVerified && me.data?.kycStatus === 'VERIFIED';
   return (
     <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg } }}>
       <Stack.Protected guard={!signedIn}>
@@ -71,7 +72,10 @@ function RootNavigator() {
         <Stack.Screen name="auth" />
         <Stack.Screen name="forgot-password" />
       </Stack.Protected>
-      <Stack.Protected guard={signedIn && !verified}>
+      <Stack.Protected guard={signedIn && !emailVerified}>
+        <Stack.Screen name="verify-email" />
+      </Stack.Protected>
+      <Stack.Protected guard={signedIn && emailVerified && !verified}>
         <Stack.Screen name="kyc" />
       </Stack.Protected>
       <Stack.Protected guard={signedIn && verified}>
