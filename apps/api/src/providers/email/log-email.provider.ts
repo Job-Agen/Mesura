@@ -7,6 +7,6 @@ export class LogEmailProvider implements EmailProvider {
   private readonly logger = new Logger(LogEmailProvider.name);
 
   async send(message: EmailMessage): Promise<void> {
-    this.logger.warn(`E-mail not sent (RESEND_API_KEY is not set): "${message.subject}"`);
+    this.logger.warn(`E-mail not sent (no e-mail service configured: RESEND_API_KEY or SMTP_*): "${message.subject}"`);
   }
 }

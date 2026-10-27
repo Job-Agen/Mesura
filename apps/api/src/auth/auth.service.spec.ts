@@ -1,5 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import type { JwtService } from '@nestjs/jwt';
+import type { AppEnv } from '../config/env';
 import type { PrismaService } from '../prisma/prisma.service';
 import type { EmailMessage, EmailProvider } from '../providers/email-provider.interface';
 import type { DemoAccountService } from '../demo/demo-account.service';
@@ -17,46 +18,54 @@ interface ResetRow {
 }
 
 /** In-memory stand-in for the few Prisma calls the reset flow makes. */
-function setup() {
-  const user = { id: 'u1', email: 'ama@test.dev', name: 'Ama', passwordHash: '', sessionVersion: 0 };
+function setup({ delivers = true, sandbox = true } = {}) {
+  const user = { id: 'u1', email: 'ama@test.dev', name: 'Ama', passwordHash: '', sessionVersion: 0, emailVerifiedAt: null as Date | null };
   let resets: ResetRow[] = [];
+  let emailCodes: ResetRow[] = [];
+  const codeTable = (rows: () => ResetRow[], set: (r: ResetRow[]) => void) => ({
+    deleteMany: async () => set([]),
+    create: async ({ data }: { data: Omit<ResetRow, 'id' | 'attempts' | 'createdAt'> }) => {
+      set([...rows(), { ...data, id: `r${rows().length}`, attempts: 0, createdAt: new Date() }]);
+    },
+    findFirst: async () => rows()[rows().length - 1] ?? null,
+    update: async ({ where }: { where: { id: string } }) => {
+      const row = rows().find((r) => r.id === where.id);
+      if (row) row.attempts += 1;
+    },
+  });
   const sent: EmailMessage[] = [];
 
   const prisma = {
     user: {
       findUnique: async ({ where }: { where: { email?: string; id?: string } }) =>
         where.email === user.email || where.id === user.id ? user : null,
-      update: async ({ data }: { data: { passwordHash: string; sessionVersion?: { increment: number } } }) =>
-        Object.assign(user, {
-          passwordHash: data.passwordHash,
-          sessionVersion: user.sessionVersion + (data.sessionVersion?.increment ?? 0),
-        }),
-    },
-    passwordResetCode: {
-      deleteMany: async () => {
-        resets = [];
-      },
-      create: async ({ data }: { data: Omit<ResetRow, 'id' | 'attempts' | 'createdAt'> }) => {
-        resets.push({ ...data, id: `r${resets.length}`, attempts: 0, createdAt: new Date() });
-      },
-      findFirst: async () => resets[resets.length - 1] ?? null,
-      update: async ({ where }: { where: { id: string } }) => {
-        const row = resets.find((r) => r.id === where.id);
-        if (row) row.attempts += 1;
+      findUniqueOrThrow: async () => user,
+      update: async ({ data }: { data: { passwordHash?: string; emailVerifiedAt?: Date; sessionVersion?: { increment: number } } }) => {
+        const { sessionVersion, ...rest } = data;
+        return Object.assign(user, rest, { sessionVersion: user.sessionVersion + (sessionVersion?.increment ?? 0) });
       },
     },
+    passwordResetCode: codeTable(
+      () => resets,
+      (r) => (resets = r),
+    ),
+    emailVerificationCode: codeTable(
+      () => emailCodes,
+      (r) => (emailCodes = r),
+    ),
     $transaction: async (ops: Promise<unknown>[]) => Promise.all(ops),
   } as unknown as PrismaService;
 
-  const email: EmailProvider = { delivers: true, send: async (m) => void sent.push(m) };
+  const email: EmailProvider = { delivers, send: async (m) => void (delivers && sent.push(m)) };
   const signed: unknown[] = [];
   const jwt = { signAsync: async (payload: unknown) => (signed.push(payload), 'token') } as unknown as JwtService;
-  const users = { getMe: async () => ({ id: user.id }) } as unknown as UsersService;
+  const users = { getMe: async () => ({ id: user.id, emailVerified: user.emailVerifiedAt !== null }) } as unknown as UsersService;
   const demo = { prepareForSignIn: async () => undefined } as unknown as DemoAccountService;
-  const service = new AuthService(prisma, jwt, users, email, demo);
+  const env = { SANDBOX_MODE: sandbox } as AppEnv;
+  const service = new AuthService(prisma, jwt, users, email, demo, env);
   const codeFromEmail = () => /(\d{6})/.exec(sent[sent.length - 1]?.text ?? '')?.[1] ?? '';
 
-  return { service, user, sent, signed, codeFromEmail, resets: () => resets };
+  return { service, user, sent, signed, codeFromEmail, resets: () => resets, emailCodes: () => emailCodes };
 }
 
 describe('AuthService password reset', () => {
@@ -116,5 +125,46 @@ describe('AuthService password reset', () => {
     await expect(service.resetPassword({ email: user.email, code, password: 'new-password' })).rejects.toThrow(
       BadRequestException,
     );
+  });
+});
+
+describe('AuthService e-mail confirmation', () => {
+  it('e-mails a code, stores only its hash, and the code confirms the address', async () => {
+    const { service, user, sent, codeFromEmail, emailCodes } = setup();
+    await expect(service.sendEmailCode(user.id)).resolves.toEqual({ delivered: true });
+    const code = codeFromEmail();
+    expect(sent[0]?.subject).toContain('confirmez votre adresse');
+    expect(emailCodes()[0]?.codeHash).not.toContain(code);
+
+    await expect(service.verifyEmail(user.id, code)).resolves.toMatchObject({ emailVerified: true });
+    expect(emailCodes()).toHaveLength(0);
+  });
+
+  it('rejects a wrong code and stops after 5 wrong attempts', async () => {
+    const { service, user, codeFromEmail } = setup();
+    await service.sendEmailCode(user.id);
+    const code = codeFromEmail();
+    const wrong = code === '000000' ? '111111' : '000000';
+    for (let i = 0; i < 5; i += 1) await expect(service.verifyEmail(user.id, wrong)).rejects.toBeInstanceOf(BadRequestException);
+    await expect(service.verifyEmail(user.id, code)).rejects.toBeInstanceOf(BadRequestException);
+    expect(user.emailVerifiedAt).toBeNull();
+  });
+
+  it('hands the code back only on a sandbox server without an e-mail service', async () => {
+    const noMail = setup({ delivers: false, sandbox: true });
+    const result = await noMail.service.sendEmailCode(noMail.user.id);
+    expect(result.delivered).toBe(false);
+    expect(result.sandboxCode).toMatch(/^\d{6}$/);
+    await expect(noMail.service.verifyEmail(noMail.user.id, result.sandboxCode ?? '')).resolves.toMatchObject({ emailVerified: true });
+
+    const live = setup({ delivers: false, sandbox: false });
+    await expect(live.service.sendEmailCode(live.user.id)).resolves.toEqual({ delivered: false });
+  });
+
+  it('sends nothing once the address is confirmed', async () => {
+    const { service, user, sent } = setup();
+    user.emailVerifiedAt = new Date();
+    await expect(service.sendEmailCode(user.id)).resolves.toEqual({ delivered: true });
+    expect(sent).toHaveLength(0);
   });
 });

@@ -17,7 +17,18 @@ echo "== register $EMAIL"
 TOKEN=$(curl -sf -X POST "$A/auth/register" -H "$JSON" \
   -d "{\"name\":\"Ama\",\"email\":\"$EMAIL\",\"password\":\"password123\",\"acceptTerms\":true}" | j "d['accessToken']")
 H="Authorization: Bearer $TOKEN"
-curl -s "$A/me" -H "$H" | j "(d['name'], d['kycStatus'])"
+curl -s "$A/me" -H "$H" | j "(d['name'], d['emailVerified'], d['kycStatus'])"
+
+echo "== e-mail confirmation (KYC refused before it: 403; a wrong code: 400; then confirmed)"
+# The sandbox server hands the code back when it has no e-mail service (CI, previews).
+confirm_email() {
+  local code
+  code=$(curl -s -X POST "$A/me/email/send-code" -H "Authorization: Bearer $1" -H "$JSON" -d '{}' | j "d['sandboxCode']")
+  curl -s -X POST "$A/me/email/verify" -H "Authorization: Bearer $1" -H "$JSON" -d "{\"code\":\"$code\"}" | j "d['emailVerified']"
+}
+post /kyc/start '{"firstName":"Ama","lastName":"Kodjo","dateOfBirth":"1990-01-01","country":"TG","phone":"+228 90 12 34 56"}' | j "(d['statusCode'], d['message'])"
+post /me/email/verify '{"code":"000000"}' | j "d['statusCode']"
+confirm_email "$TOKEN"
 
 echo "== draft + fund before KYC (expect 403)"
 CARD=$(post /cards/draft '{"maxAmount":15000,"maxTransactionCount":1,"durationMinutes":1440,"merchantRestriction":"canva"}' | j "d['id']")
@@ -31,6 +42,7 @@ post /kyc/complete | j "d['status']"
 echo "== same identity on a second account (expect 409)"
 TOKEN2=$(curl -sf -X POST "$A/auth/register" -H "$JSON" \
   -d "{\"name\":\"Ama\",\"email\":\"dup$EMAIL\",\"password\":\"password123\",\"acceptTerms\":true}" | j "d['accessToken']")
+confirm_email "$TOKEN2" > /dev/null
 curl -s -X POST "$A/kyc/start" -H "Authorization: Bearer $TOKEN2" -H "$JSON" -d "$IDENTITY" | j "d['status']"
 curl -s -X POST "$A/kyc/complete" -H "Authorization: Bearer $TOKEN2" -H "$JSON" -d '{}' | j "(d['statusCode'], d['message'])"
 curl -s -o /dev/null -w 'second account deleted: %{http_code}\n' -X DELETE "$A/me" -H "Authorization: Bearer $TOKEN2" -H "$JSON" -d '{"password":"password123"}'

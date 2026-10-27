@@ -45,10 +45,22 @@ const envSchema = z.object({
    * then refunds are simulated. Required with a live key: real money in, simulated money out is refused.
    */
   FEDAPAY_PAYOUTS_ENABLED: booleanString,
-  /** Resend (https://resend.com) API key; without it, password reset e-mails are not sent. */
+  /** Resend (https://resend.com) API key. Takes precedence over SMTP when set. */
   RESEND_API_KEY: z.string().default(''),
-  /** Sender of transactional e-mails; must be on a domain verified in Resend. */
-  EMAIL_FROM: z.string().default('Mesura <onboarding@resend.dev>'),
+  /**
+   * SMTP server for transactional e-mails (sign-up and password reset codes), e.g. Gmail:
+   * host smtp.gmail.com, port 465, user = the Gmail address, password = a Google "app password".
+   * Without Resend or SMTP, e-mails are not sent.
+   */
+  SMTP_HOST: z.string().default(''),
+  SMTP_PORT: z.coerce.number().int().positive().default(465),
+  SMTP_USER: z.string().default(''),
+  SMTP_PASS: z.string().default(''),
+  /**
+   * Sender of transactional e-mails. With Resend, an address on a verified domain; with SMTP,
+   * empty means "Mesura <SMTP_USER>" (Gmail only sends as the signed-in address).
+   */
+  EMAIL_FROM: z.string().default(''),
 });
 
 /** Cross-field rules, checked after each variable is valid on its own. */
