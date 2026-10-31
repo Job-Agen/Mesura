@@ -9,7 +9,8 @@ import { loadEnv } from './config/env';
 async function bootstrap(): Promise<void> {
   loadDotEnv();
   const env = loadEnv();
-  const app = await NestFactory.create<NestExpressApplication>(AppModule, { logger: ['log', 'warn', 'error'] });
+  // rawBody: the Fyatu webhook signature is computed over the exact bytes received.
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, { logger: ['log', 'warn', 'error'], rawBody: true });
   // Rate limiting is per client IP; behind a proxy that IP comes from X-Forwarded-For.
   if (env.TRUST_PROXY) app.set('trust proxy', 1);
   // Standard security headers (HSTS, no framing, no MIME sniffing, strict CSP for the legal pages).

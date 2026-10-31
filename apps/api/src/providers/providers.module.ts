@@ -4,6 +4,9 @@ import { CARD_ISSUER_PROVIDER } from './card-issuer-provider.interface';
 import { EMAIL_PROVIDER } from './email-provider.interface';
 import { FedaPayPaymentProvider } from './fedapay/fedapay-payment.provider';
 import { FedaPayPayoutProvider } from './fedapay/fedapay-payout.provider';
+import { FyatuCardIssuerProvider } from './fyatu/fyatu-card-issuer.provider';
+import { FyatuClient } from './fyatu/fyatu-client';
+import { PrismaService } from '../prisma/prisma.service';
 import { LogEmailProvider } from './email/log-email.provider';
 import { ResendEmailProvider } from './email/resend-email.provider';
 import { SmtpEmailProvider } from './email/smtp-email.provider';
@@ -39,7 +42,18 @@ import { SandboxPayoutProvider } from './sandbox/sandbox-payout.provider';
       useFactory: (env: AppEnv, simulated: SandboxPayoutProvider) =>
         env.FEDAPAY_SECRET_KEY && env.FEDAPAY_PAYOUTS_ENABLED ? new FedaPayPayoutProvider(env.FEDAPAY_SECRET_KEY) : simulated,
     },
-    { provide: CARD_ISSUER_PROVIDER, useExisting: SandboxCardIssuerProvider },
+    {
+      provide: CARD_ISSUER_PROVIDER,
+      inject: [APP_ENV, PrismaService, SandboxCardIssuerProvider],
+      useFactory: (env: AppEnv, prisma: PrismaService, simulated: SandboxCardIssuerProvider) =>
+        env.FYATU_API_KEY
+          ? new FyatuCardIssuerProvider(
+              new FyatuClient({ apiKey: env.FYATU_API_KEY, baseUrl: env.FYATU_API_URL, testMode: env.FYATU_TEST_MODE }),
+              prisma,
+              { productId: env.FYATU_PRODUCT_ID, jit: env.FYATU_JIT, xofPerUsd: env.FYATU_XOF_PER_USD },
+            )
+          : simulated,
+    },
     { provide: KYC_PROVIDER, useExisting: SandboxKycProvider },
     {
       provide: EMAIL_PROVIDER,

@@ -6,12 +6,15 @@ export interface CreateCardRequest {
   userId: string;
   label: string;
   expiresAt: Date;
+  /** The card's spending limit in FCFA (an issuer that pre-loads cards loads this amount). */
+  limitXof: number;
 }
 
 /** Only non-sensitive card data ever crosses this boundary. */
 export interface IssuedCard {
   providerCardId: string;
-  last4: string;
+  /** Null while the issuer is still provisioning the card (it arrives later by webhook). */
+  last4: string | null;
   status: IssuerCardStatus;
 }
 
@@ -30,7 +33,7 @@ export interface CardSecrets {
 
 /**
  * Issues and controls virtual cards.
- * Sandbox: SandboxCardIssuerProvider. Future: a licensed issuer/processor.
+ * Sandbox: SandboxCardIssuerProvider. Fyatu: FyatuCardIssuerProvider (test mode until live is allowed).
  */
 export interface CardIssuerProvider {
   createCard(request: CreateCardRequest): Promise<IssuedCard>;

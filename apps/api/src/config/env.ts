@@ -61,6 +61,29 @@ const envSchema = z.object({
    * empty means "Mesura <SMTP_USER>" (Gmail only sends as the signed-in address).
    */
   EMAIL_FROM: z.string().default(''),
+  /**
+   * Fyatu card issuing (https://docs.fyatu.com). With an API key, Fyatu issues the virtual cards
+   * instead of the sandbox issuer, and asks Mesura to approve each payment in real time.
+   */
+  FYATU_API_KEY: z.string().default(''),
+  FYATU_API_URL: z.string().url().default('https://api.fyatu.com/api/v3.20'),
+  /** Signing secret of the Fyatu webhook endpoint (whsec_…). Required with FYATU_API_KEY. */
+  FYATU_WEBHOOK_SECRET: z.string().default(''),
+  /** The Fyatu card product (prd_…) cards are issued from. Required with FYATU_API_KEY. */
+  FYATU_PRODUCT_ID: z.string().default(''),
+  /**
+   * Just-in-time product: the card holds no balance and each payment is drawn from the program
+   * balance once Mesura approves it. Otherwise the card is loaded with its limit when issued.
+   */
+  FYATU_JIT: booleanString,
+  /** Test mode (header X-Fyatu-Mode: test). Live Fyatu cards need FYATU_TEST_MODE=false and FYATU_ALLOW_LIVE=true. */
+  FYATU_TEST_MODE: z
+    .enum(['true', 'false'])
+    .default('true')
+    .transform((v) => v === 'true'),
+  FYATU_ALLOW_LIVE: booleanString,
+  /** FCFA per US dollar used to convert Fyatu (USD) amounts; set it from the partner's actual rate. */
+  FYATU_XOF_PER_USD: z.coerce.number().positive().default(600),
 });
 
 /** Cross-field rules, checked after each variable is valid on its own. */
@@ -76,6 +99,14 @@ const checkedEnvSchema = envSchema
   .refine((env) => !env.FEDAPAY_SECRET_KEY.startsWith('sk_live_') || env.FEDAPAY_PAYOUTS_ENABLED, {
     path: ['FEDAPAY_PAYOUTS_ENABLED'],
     message: 'with a live FedaPay key, refunds must be real: enable FedaPay payouts and set FEDAPAY_PAYOUTS_ENABLED=true',
+  })
+  .refine((env) => !env.FYATU_API_KEY || (env.FYATU_WEBHOOK_SECRET !== '' && env.FYATU_PRODUCT_ID !== ''), {
+    path: ['FYATU_API_KEY'],
+    message: 'Fyatu needs FYATU_WEBHOOK_SECRET (payment approvals) and FYATU_PRODUCT_ID (card product)',
+  })
+  .refine((env) => !env.FYATU_API_KEY || env.FYATU_TEST_MODE || (env.FYATU_ALLOW_LIVE && !env.SANDBOX_MODE), {
+    path: ['FYATU_TEST_MODE'],
+    message: 'live Fyatu cards spend real money: set FYATU_ALLOW_LIVE=true and SANDBOX_MODE=false, or keep FYATU_TEST_MODE=true',
   });
 
 export type AppEnv = z.infer<typeof envSchema>;
