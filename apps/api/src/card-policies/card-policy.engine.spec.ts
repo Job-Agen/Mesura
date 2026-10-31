@@ -1,5 +1,7 @@
 import {
   CardPolicyEngine,
+  catalogueMerchant,
+  merchantMatches,
   InvalidTransactionAttemptError,
   normalizeMerchant,
   type CardPolicySnapshot,
@@ -151,5 +153,22 @@ describe('CardPolicyEngine', () => {
   it('normalises merchant identifiers', () => {
     expect(normalizeMerchant(' Open AI ')).toBe('openai');
     expect(normalizeMerchant('CANVA')).toBe('canva');
+  });
+});
+
+describe('merchant matching on card networks', () => {
+  it('recognises network descriptors of catalogue merchants', () => {
+    expect(merchantMatches('netflix', 'NETFLIX.COM')).toBe(true);
+    expect(merchantMatches('meta', 'FACEBK *ADS 7Q2X')).toBe(true);
+    expect(merchantMatches('google', 'GOOGLE *YouTube Premium')).toBe(true);
+    expect(merchantMatches('amazon', 'AMZN Mktp FR')).toBe(true);
+    expect(merchantMatches('canva', 'Canva')).toBe(true);
+    expect(merchantMatches('netflix', 'SPOTIFY AB')).toBe(false);
+    expect(merchantMatches('canva', '')).toBe(false);
+  });
+
+  it('names the catalogue merchant behind a descriptor', () => {
+    expect(catalogueMerchant('OPENAI *CHATGPT SUBSCR')).toBe('openai');
+    expect(catalogueMerchant('Boutique Lomé')).toBeNull();
   });
 });

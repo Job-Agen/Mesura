@@ -40,6 +40,32 @@ export function normalizeMerchant(merchant: string): string {
 }
 
 /**
+ * How each catalogue merchant shows up on card networks ("NETFLIX.COM", "FACEBK *ADS",
+ * "GOOGLE *YouTube"…), as normalized fragments. A merchant without an entry matches its slug.
+ */
+export const MERCHANT_DESCRIPTORS: Record<string, readonly string[]> = {
+  netflix: ['netflix'],
+  canva: ['canva'],
+  meta: ['facebk', 'facebook', 'meta', 'instagram'],
+  google: ['google', 'youtube'],
+  openai: ['openai', 'chatgpt'],
+  amazon: ['amazon', 'amzn'],
+};
+
+/** True when a payment's merchant (as named by the network or the sandbox) is the restricted merchant. */
+export function merchantMatches(restriction: string, merchant: string): boolean {
+  const slug = normalizeMerchant(restriction);
+  const name = normalizeMerchant(merchant);
+  if (!slug || !name) return false;
+  return name === slug || (MERCHANT_DESCRIPTORS[slug] ?? [slug]).some((fragment) => name.includes(fragment));
+}
+
+/** The catalogue merchant a network merchant name belongs to, if any. */
+export function catalogueMerchant(merchant: string): string | null {
+  return Object.keys(MERCHANT_DESCRIPTORS).find((slug) => merchantMatches(slug, merchant)) ?? null;
+}
+
+/**
  * CardPolicyEngine — the core business rules of Mesura.
  *
  * Pure and deterministic: callers pass the policy snapshot, the attempt and
@@ -74,7 +100,7 @@ export class CardPolicyEngine {
     }
     if (
       policy.merchantRestriction !== null &&
-      normalizeMerchant(policy.merchantRestriction) !== normalizeMerchant(attempt.merchant)
+      !merchantMatches(policy.merchantRestriction, attempt.merchant)
     ) {
       return blocked('MERCHANT_NOT_ALLOWED');
     }

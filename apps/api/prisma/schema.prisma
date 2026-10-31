@@ -83,6 +83,8 @@ model User {
   passwordHash       String
   /// When the user accepted the terms of use at sign-up (null for accounts created before they existed).
   termsAcceptedAt    DateTime?
+  /// The user's cardholder id at the card issuer (e.g. Fyatu chl_…), created with their first card.
+  issuerCardholderId String?                 @unique
   /// Set once the address is confirmed with the 6-digit code sent at sign-up.
   emailVerifiedAt    DateTime?
   /// Part of every session token; raised when the password changes, which signs out every device.
@@ -260,17 +262,19 @@ model Refund {
 }
 
 model Transaction {
-  id            String            @id @default(cuid())
-  cardId        String
-  card          Card              @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  id                String            @id @default(cuid())
+  cardId            String
+  card              Card              @relation(fields: [cardId], references: [id], onDelete: Cascade)
   /// Normalised merchant identifier as presented by the merchant.
-  merchant      String
-  merchantName  String
-  amount        Int
-  currency      Currency          @default(XOF)
-  status        TransactionStatus
-  declineReason DeclineReason?
-  createdAt     DateTime          @default(now())
+  merchant          String
+  merchantName      String
+  amount            Int
+  currency          Currency          @default(XOF)
+  status            TransactionStatus
+  declineReason     DeclineReason?
+  /// Issuer event id of a real authorization: a retried delivery returns the same decision.
+  providerReference String?           @unique
+  createdAt         DateTime          @default(now())
 
   @@index([cardId, createdAt])
 }

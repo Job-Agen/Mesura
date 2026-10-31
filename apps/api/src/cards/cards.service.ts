@@ -91,7 +91,13 @@ export class CardsService {
 
     const now = new Date();
     const expiresAt = new Date(now.getTime() + card.policy.durationMinutes * MINUTE_MS);
-    const issued = await this.issuer.createCard({ cardId: card.id, userId: card.userId, label: card.label, expiresAt });
+    const issued = await this.issuer.createCard({
+      cardId: card.id,
+      userId: card.userId,
+      label: card.label,
+      expiresAt,
+      limitXof: card.policy.maxAmount,
+    });
 
     const updated = await this.prisma.card.updateMany({
       where: { id: card.id, status: 'PENDING_FUNDING' },

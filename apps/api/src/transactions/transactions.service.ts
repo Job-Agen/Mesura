@@ -2,6 +2,7 @@ import { BadRequestException, Inject, Injectable, Logger, NotFoundException } fr
 import type { SimulateTransactionInput, SimulateTransactionResponseDto, TransactionDto, TransactionFilterInput } from '@mesura/shared';
 import {
   CardPolicyEngine,
+  catalogueMerchant,
   InvalidTransactionAttemptError,
   normalizeMerchant,
   type PolicyDecision,
@@ -40,18 +41,34 @@ export class TransactionsService {
     return toTransactionDto(tx);
   }
 
+  /** A payment simulated by the card's owner (sandbox). */
+  authorize(userId: string, input: SimulateTransactionInput): Promise<SimulateTransactionResponseDto> {
+    return this.authorizeCard({ ...input, userId });
+  }
+
   /**
-   * Authorizes a merchant payment attempt against the card's policy.
-   * The card row is locked (SELECT … FOR UPDATE) so concurrent attempts are
-   * evaluated one at a time and can never overspend the limit.
+   * Authorizes a merchant payment attempt against the card's policy: a sandbox simulation (with
+   * the owner's id) or a real authorization asked by the card issuer (with its event id, so a
+   * retried delivery gets the same answer). The card row is locked (SELECT … FOR UPDATE) so
+   * concurrent attempts are evaluated one at a time and can never overspend the limit.
    */
-  async authorize(userId: string, input: SimulateTransactionInput): Promise<SimulateTransactionResponseDto> {
-    const merchantSlug = normalizeMerchant(input.merchant);
+  async authorizeCard(input: AuthorizationAttempt): Promise<SimulateTransactionResponseDto> {
+    const merchantSlug = catalogueMerchant(input.merchant) ?? normalizeMerchant(input.merchant);
     if (!merchantSlug) throw new BadRequestException('Saisissez le nom du marchand');
 
+    if (input.providerReference) {
+      const seen = await this.prisma.transaction.findUnique({
+        where: { providerReference: input.providerReference },
+        include: transactionInclude,
+      });
+      if (seen) return toResponse(seen.status === 'APPROVED' ? { decision: 'APPROVED' } : { decision: 'BLOCKED', reason: seen.declineReason ?? 'CARD_NOT_ACTIVE' }, seen);
+    }
+
     const outcome = await this.prisma.$transaction(async (tx) => {
-      const locked = await tx.$queryRaw<{ id: string }[]>`
-        SELECT id FROM "Card" WHERE id = ${input.cardId} AND "userId" = ${userId} FOR UPDATE`;
+      const locked = input.userId
+        ? await tx.$queryRaw<{ id: string }[]>`
+            SELECT id FROM "Card" WHERE id = ${input.cardId} AND "userId" = ${input.userId} FOR UPDATE`
+        : await tx.$queryRaw<{ id: string }[]>`SELECT id FROM "Card" WHERE id = ${input.cardId} FOR UPDATE`;
       if (locked.length === 0) throw new NotFoundException('Carte introuvable');
 
       const card = await tx.card.findUniqueOrThrow({ where: { id: input.cardId }, include: { policy: true } });
@@ -65,7 +82,7 @@ export class TransactionsService {
       try {
         decision = this.engine.evaluate(
           { ...policy, status: card.status },
-          { merchant: merchantSlug, amount: input.amount, currency: input.currency },
+          { merchant: input.merchant, amount: input.amount, currency: input.currency },
           now,
         );
       } catch (error) {
@@ -100,6 +117,7 @@ export class TransactionsService {
           currency: input.currency,
           status: decision.decision,
           declineReason: decision.decision === 'BLOCKED' ? decision.reason : null,
+          providerReference: input.providerReference ?? null,
         },
         include: transactionInclude,
       });
@@ -114,9 +132,23 @@ export class TransactionsService {
         (outcome.decision.decision === 'BLOCKED' ? ` (${outcome.decision.reason})` : ''),
     );
 
-    const transaction = toTransactionDto(outcome.transaction);
-    return outcome.decision.decision === 'APPROVED'
-      ? { status: 'APPROVED', transaction }
-      : { status: 'BLOCKED', reason: outcome.decision.reason, transaction };
+    return toResponse(outcome.decision, outcome.transaction);
   }
+}
+
+export interface AuthorizationAttempt extends SimulateTransactionInput {
+  /** The owner's id for a sandbox simulation (the card must be theirs); absent for an issuer request. */
+  userId?: string;
+  /** The issuer's event id for a real authorization. */
+  providerReference?: string;
+}
+
+function toResponse(
+  decision: PolicyDecision,
+  transaction: Parameters<typeof toTransactionDto>[0],
+): SimulateTransactionResponseDto {
+  const dto = toTransactionDto(transaction);
+  return decision.decision === 'APPROVED'
+    ? { status: 'APPROVED', transaction: dto }
+    : { status: 'BLOCKED', reason: decision.reason, transaction: dto };
 }

@@ -97,11 +97,26 @@ export class FundingService {
     return funding;
   }
 
+  /** Issues and activates the card of a confirmed funding; a failure is retried on the next read. */
+  private async activate(cardId: string): Promise<void> {
+    try {
+      await this.cards.activateAfterFunding(cardId);
+    } catch (error) {
+      this.logger.error(`Card ${cardId} not activated yet: ${error instanceof Error ? error.message : 'unknown error'}`);
+    }
+  }
+
   /**
    * Applies the provider's status. On CONFIRMED the card is issued and
    * activated — a card never becomes ACTIVE without a confirmed funding.
    */
   async sync(funding: Funding): Promise<Funding> {
+    if (funding.status === 'CONFIRMED') {
+      // A card issuer can refuse or delay issuing (e.g. its own checks on the cardholder):
+      // each read retries until the card is active. A no-op once it is.
+      await this.activate(funding.cardId);
+      return funding;
+    }
     if (funding.status !== 'PENDING') return funding;
 
     const expiresAt = funding.createdAt.getTime() + this.env.FUNDING_EXPIRY_MINUTES * 60_000;
@@ -115,7 +130,7 @@ export class FundingService {
       if (claimed.count === 1) {
         this.logger.log(`Funding ${funding.id} confirmed`);
         if (funding.freeCard) await this.fingerprints.consumeFreeCard(funding.userId, funding.phone);
-        await this.cards.activateAfterFunding(funding.cardId);
+        await this.activate(funding.cardId);
       }
     } else if (status === 'FAILED' || status === 'EXPIRED' || Date.now() >= expiresAt) {
       await this.prisma.funding.updateMany({
